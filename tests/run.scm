@@ -12,4 +12,17 @@
 
 (test-group "gen-fixnum"
     (test-assert
-      (between? (result (gen-fixnum)) 0 (current-fixnum-max))))
+      (between? (result (gen-fixnum)) 0 (current-fixnum-max)))
+
+    (test-assert
+     (between? (result (gen-fixnum restrict: (between 0 4))) 0 4))
+
+    (test-assert
+     (>=  (result (gen-fixnum restrict: (at-least 2))) 2))
+
+    (test-assert
+     (<=  (result (gen-fixnum restrict: (at-most 2))) 2))
+
+    (test 4 (result (gen-fixnum restrict: (exactly 4)))))
+
+(test-group "gen-fixnum/seq")
