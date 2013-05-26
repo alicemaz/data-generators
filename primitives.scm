@@ -1,5 +1,17 @@
 (use lazy-seq random-bsd srfi-1 srfi-69)
 
+
+;; todo
+;; ponder the change of the api from
+;; (gen-fixnum restrict: (between 1 2))
+;; to
+;; (restrict (gen-fixnum) (between 1 2))
+;;
+;; The latter seems a bit nicer and more generic
+;; also the signature of the generators would
+;; get rid of DSSSL parameters
+;;
+
 (define current-fixnum-max    (make-parameter most-positive-fixnum))
 (define current-fixnum-min    (make-parameter most-negative-fixnum))
 
