@@ -6,6 +6,9 @@
 (define (show-gen gen #!optional (amount 5))
   (lazy-seq->list (lazy-take amount gen)))
 
+(define (random-int min max)
+  (+ min (random (+ 1 (- max min)))))
+
 (define (project sel) (compose sel list))
 
 (define (upper-bound restriction)
