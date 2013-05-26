@@ -1,6 +1,7 @@
 (use lazy-seq random-bsd srfi-1 srfi-69)
 
-(define default-fixnum-max    (make-parameter most-positive-fixnum))
+(define current-fixnum-max    (make-parameter most-positive-fixnum))
+(define current-fixnum-min    (make-parameter most-negative-fixnum))
 
 (define (show-gen gen #!optional (amount 5))
   (lazy-seq->list (lazy-take amount gen)))
@@ -20,10 +21,10 @@
   (make-restriction 0 x))
 
 (define (at-most* x)
-  (make-restriction most-negative-fixnum x))
+  (make-restriction (current-fixnum-min) x))
 
 (define (at-least y)
-  (make-restriction y most-positive-fixnum))
+  (make-restriction y (current-fixnum-max)))
 
 (define (between x y)
   (make-restriction x y))
@@ -59,14 +60,23 @@
      (lambda ()
        (random-int lower upper)))))
 
-;; infinite sequence of booleans
-(define (gen-bool #!optional (val '()))
-  (gen-infinite
-   (lambda ()
-     (if (null? val)
-         (= ( random 2) 1)
-         val))))
+(define (gen-fixnum/seq #!key (restrict (default-restriction)))
+  (gen-cycle (gen-range restrict add1)))
 
+(define (gen-char #!key (restrict (between (integer->char 32) (integer->char 126))))
+  (let ((lower (char->integer (lower-bound restrict)))
+        (upper (char->integer (upper-bound restrict))))
+    (gen-infinite
+     (lambda ()
+       (integer->char (random-int lower upper))))))
+
+(define (gen-char/seq #!key (restrict (default-restriction)))
+  (gen-cycle (gen-range restrict integer->char)))
+
+;; infinite sequence of booleans
+(define (gen-bool)
+  (gen-infinite
+   (lambda () (= ( random 2) 1))))
 
 
 ;; Compound generators
@@ -90,6 +100,19 @@
      (let ((new-seq (lazy-drop (lazy-length sample) seq)))
        (cons (combine sample) (loop (lazy-take/random new-seq restrict) new-seq))))))
 
+(define (gen-from-sample sample)
+  (let ((len (length sample)))
+    (lazy-repeatedly
+     (lambda ()
+       (list-ref sample (random len))))))
+
+(define (gen-from-samples/seq sample)
+  (lazy-cycle
+   (list->lazy-seq sample)))
+
+(define (gen-string #!key (char-restrict (between (integer->char 32) (integer->char 126))) (restrict (default-restriction)))
+  (gen-compounds (gen-char restrict: char-restrict) (compose list->string lazy-seq->list) restrict: restrict))
+
 (define (gen-list seq . rest)
    (apply gen-compounds seq lazy-seq->list rest))
 
@@ -101,110 +124,3 @@
 
 (define (gen-hash-table key-seq value-seq  #!rest r #!key (test equal?))
   (lazy-map (lambda (x) (alist->hash-table x test)) (apply gen-alist key-seq value-seq r)))
-
-; ;; an infinite sequence producing atoms
-;; (define (gen-atom successor #!key (restrict (default-restriction)))
-;;   (lazy-repeatedly
-;;    (lambda ()
-;;      (successor restrict))))
-
-;; (define (gen-bool/true)
-;;   (gen-atom (lambda _ #t)))
-
-;; (define (gen-bool/false)
-;;   (gen-atom (lambda _ #f)))
-
-;; (define (gen-bool/random)
-;;   (gen-atom  (lambda (r) (= (random 2) 1))))
-
-
-
-;; (define (gen-fixnum)
-;;   (gen-range most-negative-fixnum most-positive-fixnum add1))
-
-
-
-
-
-
-;; (define (make-number-seq min max filter succ)
-;;   (let ((seq (lazy-filter filter (lazy-iterate succ min))))
-;;     (if max
-;;         (lazy-take (+ 1 (- max min)) seq)
-;;         seq)))
-
-;; (define (negate x) (* x -1))
-
-;; (define (random-int min max)
-;;   (+ min (random (+ 1 (- max min)))))
-
-;; (define (gen-fixnum/sequential #!key (step 1) (min 0) (max #f) (filter (constantly #t)) (after identity))
-;;   (make-number-seq min max filter (lambda (c) (after (+ c step)))))
-
-;; (define (gen-fixnum/random #!key (min 0) (max 39085789345) (filter (constantly #t)) (after identity))
-;;   (let ((next (lambda _ (after (random-int min max)))))
-;;     (make-number-seq (next) max filter next)))
-
-
-;; ;; boolean
-;; (define (gen-bool/random)
-;;   (lazy-repeatedly (lambda () (= (random 2) 1))))
-
-;; ;; char
-;; (define (gen-char/random #!key (min 0) (max 128))
-;;   (lazy-repeatedly
-;;    (lambda ()
-;;      (integer->char (random-int min max)))))
-
-;; (define (gen-char/sequential #!key (step 1) (min 0) (max 128))
-;;   (lazy-map
-;;    integer->char
-;;    (gen-fixnum/sequential step: step min: min max: max)))
-
-;; ;; strings
-;; (define (gen-string/sequential #!key (length #f) (max 10) (char-min 32) (char-max 126))
-;;   (lazy-repeatedly
-;;    (lambda ()
-;;      (list->string
-;;       (lazy-seq->list
-;;        (lazy-take
-;;         (or length (and max (random max)))
-;;         (gen-char/sequential min: char-min max: char-max)))))))
-
-;; (define (gen-string/random #!key (max 10) (length #f) (char-min 32) (char-max 126))
-;;   (lazy-repeatedly
-;;    (lambda ()
-;;      (list->string
-;;       (lazy-seq->list
-;;        (lazy-take
-;;         (or length (and max (random max)))
-;;         (gen-char/random min: char-min max: char-max)))))))
-
-;; (define (gen-from-samples/sequential sample)
-;;   (lazy-cycle
-;;    (list->lazy-seq sample)))
-
-;; (define (gen-from-samples/random sample)
-;;   (let ((len (length sample)))
-;;     (lazy-repeatedly
-;;      (lambda ()
-;;        (list-ref sample (random len))))))
-
-;; ;; compound generator restrictions
-;; ;; these are used to constrain the length of the generated compounds
-
-
-
-
-
-
-
-
-;; (define (gen-vector seq . rest)
-;;   (apply gen-sequence seq (o list->vector lazy-seq->list) rest))
-
-;; (define (gen-alist key-seq value-seq . rest)
-;;   (apply gen-sequence  (lazy-map cons key-seq value-seq) lazy-seq->list rest))
-
-;; (define (gen-hash-table key-seq value-seq  #!rest r #!key (test equal?))
-;;   (lazy-map (lambda (x) (alist->hash-table x test)) (apply gen-alist key-seq value-seq r)))
