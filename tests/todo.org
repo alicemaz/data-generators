@@ -1,0 +1,10 @@
+* Inbox
+** TODO [[file:~/coding/private/projects/scheme/data-generators/tests/run.scm::(test-assert%20#t%20)][file:~/coding/private/projects/scheme/data-generators/tests/run.scm::(test-assert #t )]] :inbox:
+  [2013-05-26 So 11:42]
+  Remove debug intformation from sentry
+  #t ................................................................... [ PASS]
+
+
+
+  trying .*.scm
+  trying .*.scm
