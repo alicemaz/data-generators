@@ -32,7 +32,9 @@
 (define (exactly x)
   (make-restriction x x))
 
-(define default-restriction (make-parameter (at-most 10)))
+(define current-fixnum-restriction  (make-parameter (at-most 1000)))
+(define current-char-restriction    (make-parameter (between (integer->char 32) (integer->char 126))))
+(define current-compound-restriction (make-parameter (at-most 10)))
 
 ;; a finite sequence of the given range
 (define (gen-range restriction step)
@@ -53,24 +55,24 @@
 ;; ==================
 
 ;; inifinite sequence of fixnums within the restrictions
-(define (gen-fixnum #!key (restrict (default-restriction)))
+(define (gen-fixnum #!key (restrict (current-fixnum-restriction)))
   (let ((lower (lower-bound restrict))
         (upper (upper-bound restrict)))
     (gen-infinite
      (lambda ()
        (random-int lower upper)))))
 
-(define (gen-fixnum/seq #!key (restrict (default-restriction)))
+(define (gen-fixnum/seq #!key (restrict (current-fixnum-restriction)))
   (gen-cycle (gen-range restrict add1)))
 
-(define (gen-char #!key (restrict (between (integer->char 32) (integer->char 126))))
+(define (gen-char #!key (restrict (current-char-restriction)))
   (let ((lower (char->integer (lower-bound restrict)))
         (upper (char->integer (upper-bound restrict))))
     (gen-infinite
      (lambda ()
        (integer->char (random-int lower upper))))))
 
-(define (gen-char/seq #!key (restrict (default-restriction)))
+(define (gen-char/seq #!key (restrict (current-char-restriction)))
   (gen-cycle (gen-range restrict integer->char)))
 
 ;; infinite sequence of booleans
@@ -94,7 +96,7 @@
 ;; returns a sequence of sequences
 ;; the combine argument is the procedure
 ;; that generates the compound type from a sample of atoms
-(define (gen-compounds seq combine #!key (restrict (default-restriction)))
+(define (gen-compounds seq combine #!key (restrict (current-compound-restriction)))
   (let loop ((sample (lazy-take/random seq restrict)) (seq seq))
     (lazy-seq
      (let ((new-seq (lazy-drop (lazy-length sample) seq)))
@@ -110,7 +112,7 @@
   (lazy-cycle
    (list->lazy-seq sample)))
 
-(define (gen-string #!key (char-restrict (between (integer->char 32) (integer->char 126))) (restrict (default-restriction)))
+(define (gen-string #!key (char-restrict (current-char-restriction)) (restrict (current-compound-restriction)))
   (gen-compounds (gen-char restrict: char-restrict) (compose list->string lazy-seq->list) restrict: restrict))
 
 (define (gen-list seq . rest)
