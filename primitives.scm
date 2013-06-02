@@ -32,24 +32,27 @@
 (define ((make-restriction lower upper) selector)
   (selector lower upper))
 
-(define (at-most x)
-  (make-restriction 0 x))
-
-(define (at-most* x)
-  (make-restriction (current-fixnum-min) x))
-
-(define (at-least y)
-  (make-restriction y (current-fixnum-max)))
-
 (define (between x y)
   (make-restriction x y))
 
-(define (exactly x)
-  (make-restriction x x))
+(define (at-most x)
+  (between 0 x))
 
-(define current-fixnum-restriction  (make-parameter (at-most 1000)))
-(define current-char-restriction    (make-parameter (between (integer->char 32) (integer->char 126))))
+(define (at-most* x)
+  (between (current-fixnum-min) x))
+
+(define (at-least y)
+  (between y (current-fixnum-max)))
+
+(define (exactly x)
+  (between x x))
+
+(define current-fixnum-restriction   (make-parameter (at-most 1000)))
+(define current-char-restriction     (make-parameter (between (integer->char 32) (integer->char 126))))
 (define current-compound-restriction (make-parameter (at-most 10)))
+
+
+
 
 ;; a finite sequence of the given range
 (define (gen-range restriction step)
