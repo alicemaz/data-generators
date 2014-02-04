@@ -1,5 +1,7 @@
 (module data-generators
-  (gen-current-fixnum-min
+
+  (%random-fixnum
+   gen-current-fixnum-min
    gen-current-fixnum-max
    gen-current-default-size
    gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64

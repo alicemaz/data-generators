@@ -1,10 +1,11 @@
-(define gen-current-fixnum-min (make-parameter most-negative-fixnum))
-(define gen-current-fixnum-max (make-parameter most-positive-fixnum))
+(define gen-current-fixnum-min (make-parameter -65536))
+(define gen-current-fixnum-max (make-parameter 65536))
 
 (define (%random-fixnum lo hi)
   (unless (<= lo hi)
     (error '%random-fixnum "upper bound must be <= lower bound" lo hi))
-    (+ lo (bsd:random-fixnum (+ 1 (- hi lo)))))
+  (let ((range (- hi lo -1)))
+    (+ (bsd:random-fixnum range) lo)))
 
 (define (%gen-fixnum/fixed-range size #!optional (start 0))
   (lambda ()
@@ -29,19 +30,19 @@
 (define (at-most  gen ub)    (gen (make-sizer (gen-current-fixnum-min) ub)))
 (define (at-least gen lb)    (gen (make-sizer lb (gen-current-fixnum-max))))
 
-
 (define (gen-fixnum #!optional (sizer (make-sizer (gen-current-fixnum-min) (gen-current-fixnum-max))))
   (%random-fixnum (sizer/lb sizer) (sizer/ub sizer)))
 
-(define (clamp val lower upper)
+(define (%clamp val lower upper)
   (cond
    ((>= val upper) upper)
    ((and (>= val lower) (<= val upper)) val)
    (else lower)))
 
+;; doesn't currently work correctly
 (define (%random-real #!optional (size 1.0) (start 0.0))
   (let ((ub (+ size start)))
-    (clamp (+ start (* size (bsd:random-real))) start ub)))
+    (%clamp (+ start (* size (bsd:random-real))) start ub)))
 
 (define (gen-real #!optional (sizer (make-sizer 0.0 1.0)))
   (%random-real (sizer/ub sizer) (sizer/lb sizer)))
