@@ -45,7 +45,9 @@
     (%clamp (+ start (* size (bsd:random-real))) start ub)))
 
 (define (gen-real #!optional (sizer (make-sizer 0.0 1.0)))
-  (%random-real (sizer/ub sizer) (sizer/lb sizer)))
+  (let* ((start (sizer/lb sizer))
+         (size  (- (sizer/ub sizer) start)))
+    (%random-real size start)))
 
 (define (gen-bool) (zero? (bsd:random-fixnum 2)))
 
