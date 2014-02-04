@@ -1,7 +1,5 @@
-(use (prefix random-bsd bsd:) (only srfi-1 iota list-tabulate) srfi-14 srfi-69)
-
-(define current-fixnum-min (make-parameter most-negative-fixnum))
-(define current-fixnum-max (make-parameter most-positive-fixnum))
+(define gen-current-fixnum-min (make-parameter most-negative-fixnum))
+(define gen-current-fixnum-max (make-parameter most-positive-fixnum))
 
 (define (%random-fixnum lo hi)
   (unless (<= lo hi)
@@ -27,13 +25,16 @@
 (define sizer/lb car)
 (define sizer/ub cdr)
 
-(define (between gen lb ub)  (gen (make-sizer lb ub)))
-(define (at-most gen  ub)    (gen (make-sizer (current-fixnum-min) ub)))
-(define (at-least gen lb)    (gen (make-sizer lb (current-fixnum-max))))
-(define (exactly gen lb ub)  (gen (make-sizer lb ub)))
+(define (between  gen lb ub) (gen (make-sizer lb ub)))
+(define (at-most  gen ub)    (gen (make-sizer (gen-current-fixnum-min) ub)))
+(define (at-least gen lb)    (gen (make-sizer lb (gen-current-fixnum-max))))
+(define (exactly  gen lb ub) (gen (make-sizer lb ub)))
 
-(define (gen-fixnum #!optional (sizer (make-sizer (current-fixnum-min) (current-fixnum-max))))
+(define (gen-fixnum #!optional (sizer (make-sizer (gen-current-fixnum-min) (gen-current-fixnum-max))))
   (%random-fixnum (sizer/lb sizer) (sizer/ub sizer)))
+
+(define (gen-real #!optional (sizer (make-sizer 0.0 1.0)))
+  (bsd:random-real))
 
 (define (gen-bool) (zero? (bsd:random-fixnum 2)))
 
@@ -57,6 +58,11 @@
 
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
+
+(define (gen-sample-of list-of-gen)
+  (let* ((l   (length list-of-gen))
+         (gen (list-ref list-of-gen  (between gen-fixnum 0 (sub1 l)))))
+    (gen)))
 
 (define (gen-pair-of gen1 gen2)
   (cons (gen1) (gen2)))
