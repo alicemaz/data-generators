@@ -1,28 +1,30 @@
 (use test)
 
-(load "primitives.scm")
+(use data-generators)
 
 (define (in? x ls) (not (null? (member x ls))))
 (define (between? a x y) (and (>= a x) (<= a y)))
-(define result lazy-head)
 
 (test-group "gen-bool"
     (test-assert
-     (in? (result (gen-bool)) (list #t #f))))
+     (in? (gen-bool) (list #t #f))))
 
 (test-group "gen-fixnum"
     (test-assert
-      (between? (result (gen-fixnum)) 0 (current-fixnum-max)))
-
+      (between? (gen-fixnum) (gen-current-fixnum-min) (gen-current-fixnum-max)))
     (test-assert
-     (between? (result (gen-fixnum restrict: (between 0 4))) 0 4))
-
+     (between? (between gen-fixnum 0 4) 0 4))
     (test-assert
-     (>=  (result (gen-fixnum restrict: (at-least 2))) 2))
-
+     (>=  (at-least gen-fixnum 2) 2))
     (test-assert
-     (<=  (result (gen-fixnum restrict: (at-most 2))) 2))
+     (<=  (at-most gen-fixnum 2) 2)))
 
-    (test 4 (result (gen-fixnum restrict: (exactly 4)))))
-
-(test-group "gen-fixnum/seq")
+(test-group "gen-real"
+    (test-assert
+     (between? (gen-real) 0.0 1.0))
+    (test-assert
+     (between? (between gen-real 1.0 2.0) 1.0 2.0))
+    (test-assert
+     (>= (at-least gen-real 1.0) 1.0))
+    (test-assert
+     (<= (at-most gen-real 2.0) 2.0)))
