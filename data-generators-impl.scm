@@ -4,11 +4,11 @@
 (define (%random-fixnum lo hi)
   (unless (<= lo hi)
     (error '%random-fixnum "upper bound must be <= lower bound" lo hi))
-    (+ lo (bsd:random-integer (+ 1 (- hi lo)))))
+    (+ lo (bsd:random-fixnum (+ 1 (- hi lo)))))
 
 (define (%gen-fixnum/fixed-range size #!optional (start 0))
   (lambda ()
-    (+ (bsd:random-integer size) start)))
+    (+ (bsd:random-fixnum size) start)))
 
 ;; these procedures can not be sized
 (define gen-int8   (%gen-fixnum/fixed-range 256 -128))
@@ -28,13 +28,23 @@
 (define (between  gen lb ub) (gen (make-sizer lb ub)))
 (define (at-most  gen ub)    (gen (make-sizer (gen-current-fixnum-min) ub)))
 (define (at-least gen lb)    (gen (make-sizer lb (gen-current-fixnum-max))))
-(define (exactly  gen lb ub) (gen (make-sizer lb ub)))
+
 
 (define (gen-fixnum #!optional (sizer (make-sizer (gen-current-fixnum-min) (gen-current-fixnum-max))))
   (%random-fixnum (sizer/lb sizer) (sizer/ub sizer)))
 
+(define (clamp val lower upper)
+  (cond
+   ((>= val upper) upper)
+   ((and (>= val lower) (<= val upper)) val)
+   (else lower)))
+
+(define (%random-real #!optional (size 1.0) (start 0.0))
+  (let ((ub (+ size start)))
+    (clamp (+ start (* size (bsd:random-real))) start ub)))
+
 (define (gen-real #!optional (sizer (make-sizer 0.0 1.0)))
-  (bsd:random-real))
+  (%random-real (sizer/ub sizer) (sizer/lb sizer)))
 
 (define (gen-bool) (zero? (bsd:random-fixnum 2)))
 
