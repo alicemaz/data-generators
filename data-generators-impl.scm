@@ -72,6 +72,12 @@
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
 
+(define-syntax with-size
+  (syntax-rules ()
+    ((_ size body0 ...)
+     (parameterize ((gen-current-default-size size))
+       body0 ...))))
+
 (define (gen-sample-of list-of-gen)
   (let* ((l   (length list-of-gen))
          (gen (list-ref list-of-gen  (between gen-fixnum 0 (sub1 l)))))
@@ -105,14 +111,14 @@
 
 (define gen-string-of
   (case-lambda
-    (()    (gen-string-of (gen-current-default-size) gen-char))
-    ((gen) (gen-string-of (gen-current-default-size) gen))
-    ((size gen)
+    (()    (gen-string-of (gen-current-default-size) char-set:graphic))
+    ((cs) (gen-string-of (gen-current-default-size) cs))
+    ((size cs)
      (with-output-to-string
        (lambda ()
          (do ((i 0 (add1 i)))
              ((>= i size))
-           (display (gen))))))))
+           (display (gen-char cs))))))))
 
 (define gen-hash-table-of
   (case-lambda

@@ -2,6 +2,5 @@
  (author "David Krentzlin")
  (category data)
  (license "BSD")
- (depends)
- (test-depends)
- (foreign-depends))
+ (depends random-bsd)
+ (test-depends test))
