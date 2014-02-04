@@ -85,3 +85,14 @@
     (test "it generates a string of the given length"
        10
        (with-size 10 (string-length (gen-string-of)))))
+
+(test-group "gen-hash-table-of"
+    (test-assert "produces a hash-table"
+       (hash-table? (gen-hash-table-of gen-fixnum gen-fixnum)))
+    (test-assert "every key is element of expected set"
+       (every fixnum? (hash-table-keys (gen-hash-table-of gen-fixnum gen-fixnum))))
+    (test-assert "every value is element of expected set"
+       (every fixnum? (hash-table-values (gen-hash-table-of gen-fixnum gen-fixnum))))
+    (test "it generates a hash-table of given size"
+      10
+      (with-size 10 (hash-table-size (gen-hash-table-of gen-fixnum gen-fixnum)))))
