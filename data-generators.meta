@@ -1,6 +1,6 @@
 ((synopsis "Automatic generation of sample data. Useful for testing or other occasions where you just need a way to quickly generate data")
  (author "David Krentzlin")
  (category data)
- (license "BSD")
+ (license "GPL-3")
  (depends random-bsd numbers)
  (test-depends test))
