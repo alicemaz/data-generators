@@ -5,21 +5,21 @@
   (unless (<= lo hi)
     (error '%random-fixnum "upper bound must be <= lower bound" lo hi))
   (let ((range (- hi lo -1)))
-    (+ (bsd:random-fixnum range) lo)))
+    (inexact->exact (+ (bsd:random-integer range) lo))))
 
-(define (%gen-fixnum/fixed-range size #!optional (start 0))
-  (lambda ()
-    (+ (bsd:random-fixnum size) start)))
+;; since these generators
+;; will most likely be used to feed some foreign code
+;; the ranges have been selected to conform to those present on most platforms
 
-;; these procedures can not be sized
-(define gen-int8   (%gen-fixnum/fixed-range 256 -128))
-(define gen-uint8  (%gen-fixnum/fixed-range 256))
-(define gen-int16  (%gen-fixnum/fixed-range 65536 -32768))
-(define gen-uint16 (%gen-fixnum/fixed-range 65536))
-(define gen-int32  (%gen-fixnum/fixed-range (expt 2 32) (- (expt 2 31))))
-(define gen-uint32 (%gen-fixnum/fixed-range (expt 2 32)))
-(define gen-int64  (%gen-fixnum/fixed-range (expt 2 64) (- (expt 2 64))))
-(define gen-uint64 (%gen-fixnum/fixed-range (expt 2 64)))
+(define gen-int8   (cut %random-fixnum -127 127))
+(define gen-uint8  (cut %random-fixnum 0 255))
+(define gen-int16  (cut %random-fixnum -32767 32767))
+(define gen-uint16 (cut %random-fixnum 0 65535))
+(define gen-int32  (cut %random-fixnum -2147483647 2147483647))
+(define gen-uint32 (cut %random-fixnum 0 4294967295))
+(define gen-int64  (cut %random-fixnum -9223372036854775807 9223372036854775807))
+(define gen-uint64 (cut %random-fixnum 0 18446744073709551615))
+
 
 ;; generic generator for fixnum allows to size the resulting number
 (define make-sizer cons)
@@ -35,8 +35,8 @@
 
 (define (%clamp val lower upper)
   (cond
-   ((>= val upper) upper)
-   ((and (>= val lower) (<= val upper)) val)
+   ((> val upper) upper)
+   ((and (> val lower) (<= val upper)) val)
    (else lower)))
 
 ;; doesn't currently work correctly

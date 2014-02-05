@@ -5,6 +5,13 @@
 (define (in? x ls) (not (null? (member x ls))))
 (define (between? a x y) (and (>= a x) (<= a y)))
 
+(define-syntax test-fixed-range
+  (syntax-rules ()
+    ((_  gen lower upper)
+     (test-group (symbol->string (quote gen))
+       (test-assert
+        (between? (gen) lower upper))))))
+
 (test-group "gen-bool"
   (test-assert
     (in? (gen-bool) (list #t #f))))
@@ -18,6 +25,15 @@
      (>=  (at-least gen-fixnum 2) 2))
     (test-assert
      (<=  (at-most gen-fixnum 2) 2)))
+
+(test-fixed-range gen-int8 -127 127)
+(test-fixed-range gen-uint8 0 255)
+(test-fixed-range gen-int16 -32767 32767)
+(test-fixed-range gen-uint16 0 65535)
+(test-fixed-range gen-int32 -2147483647 2147483647)
+(test-fixed-range gen-uint32 0 4294967295)
+(test-fixed-range gen-int64 -9223372036854775807 9223372036854775807)
+(test-fixed-range gen-uint64 0 18446744073709551615)
 
 (test-group "gen-real"
     (test-assert
