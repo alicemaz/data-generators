@@ -39,7 +39,6 @@
    ((and (> val lower) (<= val upper)) val)
    (else lower)))
 
-;; doesn't currently work correctly
 (define (%random-real #!optional (size 1.0) (start 0.0))
   (let ((ub (+ size start)))
     (%clamp (+ start (* size (bsd:random-real))) start ub)))
