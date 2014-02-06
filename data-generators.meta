@@ -3,4 +3,4 @@
  (category data)
  (license "GPL-3")
  (depends random-bsd numbers)
- (test-depends test))
+ (test-depends test numbers))
