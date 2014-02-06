@@ -70,9 +70,13 @@
      ((zero? i) (char-set-ref charset cursor))
      (else (loop (char-set-cursor-next charset cursor) (sub1 i))))))
 
+
+
 (define (sizer->charset sizer)
-  (let ((lo (char->integer (sizer/lb sizer)))
-        (hi (char->integer (sizer/ub sizer))))
+  (define (maybe-apply v p t) (if (p v) (t v) v))
+
+  (let ((lo (max 0 (maybe-apply (sizer/lb sizer) char? char->integer)))
+        (hi (max 0 (min 255 (maybe-apply (sizer/ub sizer) char? char->integer)))))
     (unless (<= lo hi)
       (error 'sizer->charset "lower bound must be <= upper bound"))
     (list->char-set (map integer->char (iota (add1 (- hi lo)) lo)))))
