@@ -19,6 +19,7 @@
    gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64
    gen-bool gen-char gen-real gen-pair-of gen-list-of gen-alist-of gen-tuple-of gen-vector-of gen-string-of
    gen-fixnum gen-hash-table-of gen-sample-of
+   make-sizer sizer/lb sizer/ub
    between at-most at-least with-size)
   (import chicken scheme)
   (use (prefix random-bsd bsd:)

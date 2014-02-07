@@ -129,7 +129,7 @@
        (do ((i 0 (add1 i))
             (vec (make-vector size)))
            ((>= i size) vec)
-         (vector-set! vec i (gen)) vec)))))
+         (vector-set! vec i (gen)))))))
 
 (define gen-string-of
   (case-lambda
