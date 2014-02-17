@@ -20,7 +20,7 @@
    gen-bool gen-char gen-real gen-pair-of gen-list-of gen-alist-of gen-tuple-of gen-vector-of gen-string-of
    gen-fixnum gen-hash-table-of gen-sample-of
    make-sizer sizer/lb sizer/ub
-   between at-most at-least with-size)
+   between at-most at-least with-size gen->sequence run-sequence)
   (import chicken scheme)
   (use (prefix random-bsd bsd:)
        (only ports with-output-to-string)

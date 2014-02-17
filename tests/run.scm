@@ -116,3 +116,13 @@
 (test-group "with-size"
     (test-assert "fixed size" (= 2 (length  (with-size 2 (gen-list-of gen-fixnum)))))
     (test-assert "range" (between? (length  (with-size (2 . 4) (gen-list-of gen-fixnum))) 2 4)))
+
+(test-group "gen->sequence"
+    (test-assert "generates a procedure" (procedure? (gen->sequence 2 (gen-list-of gen-fixnum))))
+    (let ((runs 1)
+          (seq (gen->sequence 3 (gen-list-of gen-fixnum))))
+      (test "applies proc amount times"
+            3
+            (begin
+              (seq (lambda (value) (set! runs (add1 runs))))
+              runs))))

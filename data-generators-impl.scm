@@ -152,3 +152,13 @@
             (ht (make-hash-table)))
            ((>= i size) ht)
          (hash-table-set! ht (key-gen) (value-gen)))))))
+
+(define-syntax gen->sequence
+  (syntax-rules ()
+    ((_ amount body0 ...)
+     (lambda (proc)
+       (do ((i 1 (add1 i)))
+           ((>= i amount))
+         (proc (begin body0 ...)))))))
+
+(define (run-sequence seq proc) (seq proc))
