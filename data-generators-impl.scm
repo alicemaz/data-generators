@@ -114,6 +114,9 @@
      (let ((charset (boundaries->charset lower upper)))
        (generator (%random-char charset))))))
 
+(define (gen-sample candidates)
+  (let ((l (length candidates)))
+    (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
 
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
@@ -127,9 +130,9 @@
      (parameterize ((gen-current-default-size (constantly size)))
        body0 ...))))
 
-(define (gen-sample-of candidates)
-  (let ((l (length candidates)))
-    (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
+(define (gen-sample-of . gens)
+  (let ((l (length gens)))
+    (generator (<- (list-ref gens (<- (gen-fixnum 0 (sub1 l))))))))
 
 (define (gen-pair-of car-gen cdr-gen)
   (generator

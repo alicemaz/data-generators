@@ -16,9 +16,8 @@
    gen-current-fixnum-max
    gen-current-default-size
    generator <- <-* gen-for-each
-   gen-constant
-   gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64
-   gen-bool gen-char gen-fixnum gen-real gen-sample-of gen-pair-of gen-tuple-of
+   gen-constant  gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64
+   gen-bool gen-char gen-fixnum gen-real gen-sample gen-sample-of gen-pair-of gen-tuple-of
    gen-list-of gen-alist-of gen-vector-of gen-string-of gen-hash-table-of gen-record
    with-size)
   (import chicken scheme)

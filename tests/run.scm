@@ -78,9 +78,13 @@
     (test-error "lower bound <= upper bound"
      (gen-char #\z #\a)))
 
-(test-group "gen-sample-of"
+(test-group "gen-sample"
     (test-assert (between? (<- (gen-sample-of (iota 10))) 0 9))
     (test-assert (in? (<- (gen-sample-of (list #\a #\b #\c))) (list #\a #\b #\c))))
+
+(test-group "gen-sample-of"
+            (test-assert (every (lambda (e) (or (fixnum? e) (char? e)))
+                                (<- (gen-sample-of (gen-fixnum) (gen-char))))))
 
 (test-group "gen-pair-of"
     (test-assert "produces a pair"
