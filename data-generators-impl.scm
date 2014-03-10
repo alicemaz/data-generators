@@ -23,6 +23,14 @@
 (define (<- gen)
   (gen))
 
+(define (gen-for-each rounds proc gen)
+  (do ((i 1 (add1 i)))
+      ((>= i rounds))
+    (proc (<- gen))))
+
+(define (gen-constant value)
+  (generator value))
+
 (define gen-current-fixnum-min (make-parameter -65536))
 (define gen-current-fixnum-max (make-parameter 65536))
 
@@ -33,7 +41,6 @@
 ;; since these generators
 ;; will most likely be used to feed some foreign code
 ;; the ranges have been selected to conform to those present on most platforms
-
 (define gen-fixnum
   (case-lambda
     (()      (gen-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
@@ -99,85 +106,75 @@
     (() (gen-char char-set:graphic))
     ((charset)
      (unless (char-set? charset)
-       (error "You need to supply a char-set"))
+       (error "You need to supply a char-set" charset))
      (generator (%random-char charset)))
     ((lower upper)
+     (unless (char<=? lower upper)
+       (error "lower bound must be <= upper bound" lower upper))
      (let ((charset (boundaries->charset lower upper)))
        (generator (%random-char charset))))))
 
-;; ;; combinators
-;; (define gen-current-default-size (make-parameter (cut gen-uint8)))
+;; combinators
+(define gen-current-default-size (make-parameter (gen-uint8)))
 
-;; (define-syntax with-size
-;;   (syntax-rules ()
-;;     ((_ (lb . ub) body0 ...)
-;;      (parameterize ((gen-current-default-size (cut between gen-fixnum lb ub)))
-;;        body0 ...))
-;;     ((_ size body0 ...)
-;;      (parameterize ((gen-current-default-size (constantly size)))
-;;        body0 ...))))
+(define-syntax with-size
+  (syntax-rules ()
+    ((_ (lb . ub) body0 ...)
+     (parameterize ((gen-current-default-size (gen-fixnum lb ub)))
+       body0 ...))
+    ((_ size body0 ...)
+     (parameterize ((gen-current-default-size (constantly size)))
+       body0 ...))))
 
-;; (define (gen-sample-of list-of-gen)
-;;   (let* ((l   (length list-of-gen))
-;;          (gen (list-ref list-of-gen  (between gen-fixnum 0 (sub1 l)))))
-;;     (gen)))
+(define (gen-sample-of candidates)
+  (let ((l (length candidates)))
+    (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
 
-;; (define (gen-pair-of gen1 gen2)
-;;   (cons (gen1) (gen2)))
+(define (gen-pair-of car-gen cdr-gen)
+  (generator
+   (cons (<- car-gen) (<- cdr-gen))))
 
-;; (define (gen-tuple-of . gens)
-;;   (map (lambda (g) (g)) gens))
+(define (gen-tuple-of . gens)
+  (generator (map <- gens)))
 
-;; (define gen-list-of
-;;   (case-lambda
-;;     ((gen) (gen-list-of gen (gen-current-default-size)))
-;;     ((gen size)
-;;      (list-tabulate (size) (lambda _ (gen))))))
+(define gen-list-of
+  (case-lambda
+    ((gen) (gen-list-of gen (<- (gen-current-default-size))))
+    ((gen size)
+     (generator
+      (list-tabulate size (lambda _ (<- gen)))))))
 
-;; (define  gen-alist-of
-;;   (case-lambda
-;;     ((key-gen value-gen) (gen-list-of (lambda () (gen-pair-of key-gen value-gen)) (gen-current-default-size)))
-;;     ((key-gen value-gen size)
-;;      (gen-list-of (lambda () (gen-pair-of key-gen value-gen)) size))))
+(define  gen-alist-of
+  (case-lambda
+    ((key-gen value-gen)
+     (gen-list-of (gen-pair-of key-gen value-gen) (<- (gen-current-default-size))))
+    ((key-gen value-gen size)
+     (gen-list-of (gen-pair-of key-gen value-gen) size))))
 
-;; (define gen-vector-of
-;;   (case-lambda
-;;     ((gen) (gen-vector-of gen (gen-current-default-size)))
-;;     ((gen size)
-;;      (let ((size (size)))
-;;        (do ((i 0 (add1 i))
-;;             (vec (make-vector size)))
-;;            ((>= i size) vec)
-;;          (vector-set! vec i (gen)))))))
+(define gen-vector-of
+  (case-lambda
+    ((gen) (gen-vector-of gen (<- (gen-current-default-size))))
+    ((gen size)
+     (generator
+      (do ((i 0 (add1 i))
+           (vec (make-vector size)))
+          ((>= i size) vec)
+        (vector-set! vec i (gen)))))))
 
-;; (define gen-string-of
-;;   (case-lambda
-;;     (()    (gen-string-of char-set:graphic (gen-current-default-size)))
-;;     ((cs) (gen-string-of cs (gen-current-default-size)))
-;;     ((cs size)
-;;      (let ((size (size)))
-;;        (with-output-to-string
-;;          (lambda ()
-;;            (do ((i 0 (add1 i)))
-;;                ((>= i size))
-;;              (display (gen-char cs)))))))))
+(define gen-string
+  (case-lambda
+    (()    (gen-string char-set:graphic (<- (gen-current-default-size))))
+    ((cs)  (gen-string cs (<- (gen-current-default-size))))
+    ((cs size)
+     (generator
+      (list->string (<- (gen-list-of (gen-char cs) size)))))))
 
-;; (define gen-hash-table-of
-;;   (case-lambda
-;;     ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (gen-current-default-size)))
-;;     ((key-gen value-gen size)
-;;      (let ((size (size)))
-;;        (do ((i 0 (add1 i))
-;;             (ht (make-hash-table)))
-;;            ((>= i size) ht)
-;;          (hash-table-set! ht (key-gen) (value-gen)))))))
-
-;; (define-syntax gen->sequence
-;;   (syntax-rules ()
-;;     ((_ amount body0 ...)
-;;      (lambda (proc)
-;;        (do ((i 1 (add1 i)))
-;;            ((>= i amount))
-;;          (proc (begin body0 ...)))))))
-
-;; (define (run-sequence seq proc) (seq proc))
+(define gen-hash-table-of
+  (case-lambda
+    ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (<- (gen-current-default-size))))
+    ((key-gen value-gen size)
+     (generator
+      (do ((i 0 (add1 i))
+           (ht (make-hash-table)))
+          ((>= i size) ht)
+        (hash-table-set! ht (<- key-gen) (<- value-gen)))))))
