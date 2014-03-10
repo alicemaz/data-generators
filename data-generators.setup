@@ -4,4 +4,4 @@
 (install-extension
  'data-generators
  '("data-generators.so" "data-generators.import.so")
- '((version "2.0.0")))
+ '((version "2.1.0")))
