@@ -40,7 +40,7 @@
     ((upper) (gen-fixnum (gen-current-fixnum-min) upper))
     ((lower upper)
      (unless (<= lower upper)
-       (error "upper bound must be <= lower bound"))
+       (error "upper bound must be <= lower bound" lower upper))
      (generator (%random-fixnum lower upper)))))
 
 (define-syntax define-fixed-range-generator
@@ -72,6 +72,8 @@
     (()      (gen-real 0.0 1.0))
     ((upper) (gen-real 0.0 upper))
     ((lower upper)
+     (unless (<= lower upper)
+       (error "lower bound must be <= upper bound" lower upper))
      (generator (%random-real (- upper lower) lower)))))
 
 (define (gen-bool)
@@ -89,7 +91,7 @@
   (let ((lo (max 0 (maybe-apply lower char? char->integer)))
         (hi (max 0 (min 255 (maybe-apply upper char? char->integer)))))
     (unless (<= lo hi)
-      (error 'sizer->charset "lower bound must be <= upper bound"))
+      (error 'sizer->charset "lower bound must be <= upper bound" lower upper))
     (list->char-set (map integer->char (iota (add1 (- hi lo)) lo)))))
 
 (define gen-char

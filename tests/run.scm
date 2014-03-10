@@ -5,6 +5,7 @@
 (define (in? x ls) (not (null? (member x ls))))
 (define (between? a x y) (and (>= a x) (<= a y)))
 
+
 (define-syntax test-fixed-range
   (syntax-rules ()
     ((_  gen lower upper)
@@ -22,7 +23,8 @@
     (test-assert
      (between? (<- (gen-fixnum 4)) (gen-current-fixnum-min) 4))
     (test-assert
-     (between? (<- (gen-fixnum 2 4)) 2 4)))
+     (between? (<- (gen-fixnum 2 4)) 2 4))
+    (test-error (gen-fixnum 4 2)))
 
 (test-fixed-range gen-int8 -127 127)
 (test-fixed-range gen-uint8 0 255)
@@ -39,7 +41,17 @@
     (test-assert
      (between? (<- (gen-real 1.0)) 0.0 1.0))
     (test-assert
-     (between? (<- (gen-real 1.0 2.0)) 1.0 2.0)))
+     (between? (<- (gen-real 1.0 2.0)) 1.0 2.0))
+    (test-error
+     (gen-real 2.0 1.0)))
+
+(test-group "gen-char"
+    (test-assert
+     (char-set-contains? char-set:graphic (<- (gen-char))))
+    (test-assert
+     (char-set-contains? char-set:digit (<- (gen-char char-set:digit))))
+    (test-assert
+     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char #\a #\c)))))
 
 ;; (test-group "gen-pair-of"
 ;;     (test-assert "produces a pair"
