@@ -150,6 +150,18 @@
       10
       (with-size 10 (hash-table-size (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))))
 
+
+(define-record test-record x y)
+
+(test-group "gen-record"
+            (let ((record (<- (gen-record make-test-record (gen-fixnum) (gen-fixnum)))))
+              (test-assert
+               (test-record? record))
+              (test-assert
+               (fixnum? (test-record-x record)))
+              (test-assert
+               (fixnum? (test-record-y record)))))
+
 (test-group "with-size"
             (test-assert "fixed size" (= 2 (length  (with-size 2 (<- (gen-list-of (gen-fixnum)))))))
             (test-assert "range" (between? (length  (with-size (2 . 4) (<- (gen-list-of (gen-fixnum))))) 2 4)))

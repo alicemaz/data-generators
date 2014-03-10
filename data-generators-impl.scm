@@ -178,3 +178,6 @@
            (ht (make-hash-table)))
           ((>= i size) ht)
         (hash-table-set! ht (<- key-gen) (<- value-gen)))))))
+
+(define (gen-record ctor . slot-gens)
+  (generator (apply ctor (map <- slot-gens))))
