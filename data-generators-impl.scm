@@ -114,6 +114,7 @@
      (let ((charset (boundaries->charset lower upper)))
        (generator (%random-char charset))))))
 
+
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
 
@@ -151,6 +152,13 @@
     ((key-gen value-gen size)
      (gen-list-of (gen-pair-of key-gen value-gen) size))))
 
+(define gen-string-of
+  (case-lambda
+    ((gen)  (gen-string-of gen (<- (gen-current-default-size))))
+    ((gen size)
+     (generator
+      (list->string (<- (gen-list-of gen size)))))))
+
 (define gen-vector-of
   (case-lambda
     ((gen) (gen-vector-of gen (<- (gen-current-default-size))))
@@ -160,14 +168,6 @@
            (vec (make-vector size)))
           ((>= i size) vec)
         (vector-set! vec i (gen)))))))
-
-(define gen-string
-  (case-lambda
-    (()    (gen-string char-set:graphic (<- (gen-current-default-size))))
-    ((cs)  (gen-string cs (<- (gen-current-default-size))))
-    ((cs size)
-     (generator
-      (list->string (<- (gen-list-of (gen-char cs) size)))))))
 
 (define gen-hash-table-of
   (case-lambda

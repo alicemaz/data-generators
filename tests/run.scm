@@ -128,16 +128,16 @@
       (with-size 4
                  (vector-length (<- (gen-vector-of (gen-fixnum)))))))
 
-(test-group "gen-string"
+(test-group "gen-string-of"
     (test-assert "produces a string"
-                 (string? (<- (gen-string))))
+                 (string? (<- (gen-string-of (gen-char)))))
     (test-assert "every element is within the given char-set"
                  (every (cut char-set-contains? char-set:graphic <>)
                         (string->list
-                         (<- (gen-string char-set:graphic)))))
+                         (<- (gen-string-of (gen-char char-set:graphic))))))
     (test "it generates a string of the given length"
        10
-       (with-size 10 (string-length (<- (gen-string))))))
+       (with-size 10 (string-length (<- (gen-string-of (gen-char)))))))
 
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
