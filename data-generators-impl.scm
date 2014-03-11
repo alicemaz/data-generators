@@ -16,6 +16,8 @@
     ((_ ?body ...)
      (lambda () ?body ...))))
 
+(define generator? procedure?)
+
 ;; take amount elements from gen and return it in a list
 (define (<-* amount gen)
   (map (lambda _ (gen)) (iota amount)))
@@ -118,6 +120,26 @@
   (let ((l (length candidates)))
     (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
 
+
+
+(define (make-range start stop)
+  (if (> start stop)
+      (error "start must be <= stop"))
+  (cons start stop))
+
+(define range? pair?)
+(define range-start car)
+(define range-end cdr)
+
+(define-syntax range
+  (syntax-rules (..)
+    ((_ .. ?stop)
+     (make-range (gen-current-fixnum-min) (- ?stop 1)))
+    ((_ ?start ..)
+     (make-range ?start (- (gen-current-fixnum-max) 1)))
+    ((_ ?start .. ?stop)
+     (make-range (+ ?start 1) (- ?stop 1)))))
+
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
 
@@ -127,7 +149,7 @@
      (parameterize ((gen-current-default-size (gen-fixnum lb ub)))
        body0 ...))
     ((_ size body0 ...)
-     (parameterize ((gen-current-default-size (constantly size)))
+     (parameterize ((gen-current-default-size (gen-constant size)))
        body0 ...))))
 
 (define (gen-sample-of . gens)
@@ -141,12 +163,20 @@
 (define (gen-tuple-of . gens)
   (generator (map <- gens)))
 
+(define (size-spec->gen spec)
+  (cond
+   ((generator? spec) spec)
+   ((range? spec)    (gen-fixnum (range-start spec) (range-end spec)))
+   ((fixnum? spec)   (gen-constant spec))
+   (else (error "Invalid size specification" spec))))
+
 (define gen-list-of
   (case-lambda
-    ((gen) (gen-list-of gen (<- (gen-current-default-size))))
-    ((gen size)
-     (generator
-      (list-tabulate size (lambda _ (<- gen)))))))
+    ((gen) (gen-list-of gen (gen-current-default-size)))
+    ((gen size-spec)
+     (let ((size-gen (size-spec->gen size-spec)))
+       (generator
+	(list-tabulate (<- size-gen) (lambda _ (<- gen))))))))
 
 (define  gen-alist-of
   (case-lambda

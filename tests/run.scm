@@ -82,6 +82,18 @@
     (test-assert (between? (<- (gen-sample (iota 10))) 0 9))
     (test-assert (in? (<- (gen-sample (list #\a #\b #\c))) (list #\a #\b #\c))))
 
+(test-group "range syntax"
+	    (test-group "exclusive"
+			(test "neginf to upper"
+			      (cons (gen-current-fixnum-min)  4)
+			      (range .. 5))
+			(test "lower to posinf"
+			      (cons 3  (sub1 (gen-current-fixnum-max)))
+			      (range 3 .. ))
+			(test "lower .. upper"
+			      (cons 1  9)
+			      (range 0 .. 10))))
+
 (test-group "gen-sample-of"
             (test-assert ((lambda (e) (or (fixnum? e) (char? e)))
 			  (<- (gen-sample-of (gen-fixnum) (gen-char))))))
@@ -101,15 +113,33 @@
           #t
           (every fixnum? (<- (gen-tuple-of (gen-fixnum) (gen-fixnum))))))
 
+
+(define-syntax test-size-spec-support
+  (syntax-rules ()
+    ((_ ?length (?gen ?args ...))
+     (let ((length-matches (lambda (from to ls)
+			     (every (lambda (e) (between? e from to)) (map ?length ls)))))
+       (test-group "supports size-spec"
+		   (test-assert "range"
+				(length-matches 0 10  (<-* 10 (?gen ?args ... (make-range 0 10)))))
+		   (test-assert "fixed size"
+				(length-matches 10 10 (<-* 10 (?gen ?args ... 10))))
+		   (test-assert "generator"
+				(length-matches 0 10  (<-* 10 (?gen ?args ... (gen-fixnum 0 10)))))
+		   (test-assert "it generates a list with different lengths"
+				(let ((ls (map length (<-* 10 (?gen ?args ... (gen-fixnum 0 100))))))
+				  (not (every (lambda (e) (= e (car ls))) ls)))))))))
+
+
 (test-group "gen-list-of"
     (test-assert "produces a list"
                  (list? (<- (gen-list-of (gen-fixnum)))))
     (test-assert "each element is part of expected set"
                  (every fixnum? (<- (gen-list-of (gen-fixnum)))))
-    (test "it generates list of given length"
-      3
-      (with-size 3
-                 (length (<- (gen-list-of (gen-fixnum)))))))
+    (test-assert "accepts ranges"
+		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 .. 10)))) 2 9))
+
+    (test-size-spec-support length (gen-list-of (gen-fixnum))))
 
 (test-group "gen-alist-of"
    (test-assert "produces a list"
