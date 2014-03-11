@@ -23,12 +23,12 @@
 (test-group "<-"
             (test "it takes one element from gen"
                   3
-                  (<- (gen-sample-of (list 3)))))
+                  (<- (gen-sample (list 3)))))
 
 (test-group "<-*"
             (test "it takes n elements form gen"
                   (list 3 3 3)
-                  (<-* 3 (gen-sample-of (list 3)))))
+                  (<-* 3 (gen-sample (list 3)))))
 
 (test-group "gen-constant"
             (test "it constantly returns the given value"
@@ -79,12 +79,12 @@
      (gen-char #\z #\a)))
 
 (test-group "gen-sample"
-    (test-assert (between? (<- (gen-sample-of (iota 10))) 0 9))
-    (test-assert (in? (<- (gen-sample-of (list #\a #\b #\c))) (list #\a #\b #\c))))
+    (test-assert (between? (<- (gen-sample (iota 10))) 0 9))
+    (test-assert (in? (<- (gen-sample (list #\a #\b #\c))) (list #\a #\b #\c))))
 
 (test-group "gen-sample-of"
-            (test-assert (every (lambda (e) (or (fixnum? e) (char? e)))
-                                (<- (gen-sample-of (gen-fixnum) (gen-char))))))
+            (test-assert ((lambda (e) (or (fixnum? e) (char? e)))
+			  (<- (gen-sample-of (gen-fixnum) (gen-char))))))
 
 (test-group "gen-pair-of"
     (test-assert "produces a pair"
