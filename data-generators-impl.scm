@@ -145,11 +145,8 @@
 
 (define-syntax with-size
   (syntax-rules ()
-    ((_ (lb . ub) body0 ...)
-     (parameterize ((gen-current-default-size (gen-fixnum lb ub)))
-       body0 ...))
-    ((_ size body0 ...)
-     (parameterize ((gen-current-default-size (gen-constant size)))
+    ((_ size-spec body0 ...)
+     (parameterize ((gen-current-default-size (size-spec->gen size-spec)))
        body0 ...))))
 
 (define (gen-sample-of . gens)
