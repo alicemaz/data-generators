@@ -127,7 +127,7 @@
 		   (test-assert "generator"
 				(length-matches 0 10  (<-* 10 (?gen ?args ... (gen-fixnum 0 10)))))
 		   (test-assert "it generates a list with different lengths"
-				(let ((ls (map length (<-* 10 (?gen ?args ... (gen-fixnum 0 100))))))
+				(let ((ls (map ?length (<-* 10 (?gen ?args ... (gen-fixnum 0 100))))))
 				  (not (every (lambda (e) (= e (car ls))) ls)))))))))
 
 
@@ -148,19 +148,14 @@
                 (every (compose char? car) (<- (gen-alist-of (gen-char) (gen-fixnum)))))
    (test-assert "every value is of expected set"
                 (every (compose fixnum? cdr) (<- (gen-alist-of (gen-char) (gen-fixnum)))))
-   (test "it generates alist of given length"
-       4
-       (with-size 4 (length (<- (gen-alist-of (gen-char) (gen-fixnum)))))))
+    (test-size-spec-support length (gen-alist-of (gen-fixnum) (gen-fixnum))))
 
 (test-group "gen-vector-of"
    (test-assert "produces a vector"
                 (vector? (<- (gen-vector-of (gen-fixnum)))))
    (test-assert "every element is element of expected set"
                 (every fixnum?  (vector->list (<- (gen-vector-of (gen-fixnum))))))
-   (test "it generates vector of given length"
-      4
-      (with-size 4
-                 (vector-length (<- (gen-vector-of (gen-fixnum)))))))
+   (test-size-spec-support vector-length (gen-vector-of (gen-fixnum))))
 
 (test-group "gen-string-of"
     (test-assert "produces a string"
@@ -169,9 +164,7 @@
                  (every (cut char-set-contains? char-set:graphic <>)
                         (string->list
                          (<- (gen-string-of (gen-char char-set:graphic))))))
-    (test "it generates a string of the given length"
-       10
-       (with-size 10 (string-length (<- (gen-string-of (gen-char)))))))
+    (test-size-spec-support string-length (gen-string-of (gen-char))))
 
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
@@ -180,9 +173,7 @@
                  (every fixnum? (hash-table-keys (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
     (test-assert "every value is element of expected set"
                  (every fixnum? (hash-table-values (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
-    (test "it generates a hash-table of given size"
-      10
-      (with-size 10 (hash-table-size (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))))
+    (test-size-spec-support (o length hash-table-keys) (gen-hash-table-of (gen-fixnum) (gen-fixnum))))
 
 
 (define-record test-record x y)

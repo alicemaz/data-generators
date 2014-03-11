@@ -153,8 +153,9 @@
        body0 ...))))
 
 (define (gen-sample-of . gens)
-  (let ((l (length gens)))
-    (generator (<- (list-ref gens (<- (gen-fixnum 0 (sub1 l))))))))
+  (let ((l (length gens))
+	(gens (list->vector gens)))
+    (generator (<- (vector-ref gens (<- (gen-fixnum 0 (sub1 l))))))))
 
 (define (gen-pair-of car-gen cdr-gen)
   (generator
@@ -181,36 +182,40 @@
 (define  gen-alist-of
   (case-lambda
     ((key-gen value-gen)
-     (gen-list-of (gen-pair-of key-gen value-gen) (<- (gen-current-default-size))))
-    ((key-gen value-gen size)
-     (gen-list-of (gen-pair-of key-gen value-gen) size))))
+     (gen-list-of (gen-pair-of key-gen value-gen) (gen-current-default-size)))
+    ((key-gen value-gen size-spec)
+     (gen-list-of (gen-pair-of key-gen value-gen) size-spec))))
 
 (define gen-string-of
   (case-lambda
-    ((gen)  (gen-string-of gen (<- (gen-current-default-size))))
-    ((gen size)
+    ((gen)  (gen-string-of gen (gen-current-default-size)))
+    ((gen size-spec)
      (generator
-      (list->string (<- (gen-list-of gen size)))))))
+      (list->string (<- (gen-list-of gen size-spec)))))))
 
 (define gen-vector-of
   (case-lambda
     ((gen) (gen-vector-of gen (<- (gen-current-default-size))))
-    ((gen size)
-     (generator
-      (do ((i 0 (add1 i))
-           (vec (make-vector size)))
-          ((>= i size) vec)
-        (vector-set! vec i (gen)))))))
+    ((gen size-spec)
+     (let ((size-gen (size-spec->gen size-spec)))
+       (generator
+	(let ((size (<- size-gen)))
+	  (do ((i 0 (add1 i))
+	       (vec (make-vector size)))
+	      ((>= i size) vec)
+	    (vector-set! vec i (gen)))))))))
 
 (define gen-hash-table-of
   (case-lambda
     ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (<- (gen-current-default-size))))
-    ((key-gen value-gen size)
-     (generator
-      (do ((i 0 (add1 i))
-           (ht (make-hash-table)))
-          ((>= i size) ht)
-        (hash-table-set! ht (<- key-gen) (<- value-gen)))))))
+    ((key-gen value-gen size-spec)
+     (let ((size-gen (size-spec->gen size-spec)))
+       (generator
+	(let ((size (<- size-gen)))
+	  (do ((i 0 (add1 i))
+	       (ht (make-hash-table)))
+	      ((>= i size) ht)
+	    (hash-table-set! ht (<- key-gen) (<- value-gen)))))))))
 
 (define (gen-record ctor . slot-gens)
   (generator (apply ctor (map <- slot-gens))))
