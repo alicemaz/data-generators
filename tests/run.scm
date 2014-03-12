@@ -241,7 +241,7 @@
 (use data-generators-literals)
 
 (test-group "range syntax"
-	    (test-group "exclusive"
+	    (test-group "inclusive"
 			(test "neg/inf to upper"
 			      (range (gen-current-fixnum-min)  5)
 			      #i[.. 5])
@@ -250,4 +250,19 @@
 			      #i[3 ..])
 			(test "lower .. upper"
 			      (range 0 10)
-			      #i[0 .. 10])))
+			      #i[0 .. 10]))
+            (test-group "exclusive"
+			(test "neg/inf to upper"
+			      (range (add1 (gen-current-fixnum-min)) 5)
+			      #i[... 5])
+			(test "lower to pos/inf"
+			      (range 3 (sub1 (gen-current-fixnum-max)))
+			      #i[3 ...])
+			(test "lower ... upper"
+			      (range 1 9)
+			      #i[0 ... 10]))
+
+            )
+
+
+(test-exit)
