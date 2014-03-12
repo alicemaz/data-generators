@@ -68,10 +68,22 @@
 ;; since these generators
 ;; will most likely be used to feed some foreign code
 ;; the ranges have been selected to conform to those present on most platforms
+
+
+(define (size-spec->bounds size-spec #!optional (lower (gen-current-fixnum-min)))
+  (cond
+   ((range? size-spec)
+    (list (range-start size-spec) (range-end size-spec)))
+   ((number? size-spec)
+    (list lower size-spec))
+   (else (error "invalid size specification" size-spec))))
+
 (define gen-fixnum
   (case-lambda
-    (()      (gen-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
-    ((upper) (gen-fixnum (gen-current-fixnum-min) upper))
+    (()
+     (gen-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
+    ((size-spec)
+     (apply gen-fixnum (size-spec->bounds size-spec)))
     ((lower upper)
      (unless (<= lower upper)
        (error "upper bound must be <= lower bound" lower upper))
@@ -103,8 +115,10 @@
 
 (define gen-real
   (case-lambda
-    (()      (gen-real 0.0 1.0))
-    ((upper) (gen-real 0.0 upper))
+    (()
+     (gen-real 0.0 1.0))
+    ((size-spec)
+     (apply gen-real (size-spec->bounds size-spec 0.0)))
     ((lower upper)
      (unless (<= lower upper)
        (error "lower bound must be <= upper bound" lower upper))
@@ -131,10 +145,13 @@
 (define gen-char
   (case-lambda
     (() (gen-char char-set:graphic))
-    ((charset)
-     (unless (char-set? charset)
-       (error "You need to supply a char-set" charset))
-     (generator (%random-char charset)))
+    ((charset-or-range)
+     (cond
+      ((char-set? charset-or-range)
+       (generator (%random-char charset-or-range)))
+      ((range? charset-or-range)
+       (gen-char (range-start charset-or-range) (range-end charset-or-range)))
+      (else (error "Invalid argument. Must be either range or charset" charset-or-range))))
     ((lower upper)
      (unless (char<=? lower upper)
        (error "lower bound must be <= upper bound" lower upper))

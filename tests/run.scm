@@ -5,12 +5,18 @@
 (define (in? x ls) (not (null? (member x ls))))
 (define (between? a x y) (and (>= a x) (<= a y)))
 
-(define-syntax test-fixed-range
-  (syntax-rules ()
-    ((_  gen lower upper)
-     (test-group (symbol->string (quote gen))
-       (test-assert
-        (between? (<- (gen)) lower upper))))))
+
+(test-group "range syntax"
+	    (test-group "exclusive"
+			(test "neg/inf to upper"
+			      (make-range (gen-current-fixnum-min)  5)
+			      (range .. 5))
+			(test "lower to pos/inf"
+			      (make-range 3 (gen-current-fixnum-max))
+			      (range 3 .. ))
+			(test "lower .. upper"
+			      (make-range 0 10)
+			      (range 0 .. 10))))
 
 (test-group "gen-for-each"
     (let ((runs 1))
@@ -46,8 +52,17 @@
      (between? (<- (gen-fixnum 4)) (gen-current-fixnum-min) 4))
     (test-assert
      (between? (<- (gen-fixnum 2 4)) 2 4))
+    (test-assert
+     (between? (<- (gen-fixnum (range 2 .. 4))) 2 4))
     (test-error "lower bound <= upper bound"
      (gen-fixnum 4 2)))
+
+(define-syntax test-fixed-range
+  (syntax-rules ()
+    ((_  gen lower upper)
+     (test-group (symbol->string (quote gen))
+       (test-assert
+        (between? (<- (gen)) lower upper))))))
 
 (test-fixed-range gen-int8 -127 127)
 (test-fixed-range gen-uint8 0 255)
@@ -65,6 +80,10 @@
      (between? (<- (gen-real 1.0)) 0.0 1.0))
     (test-assert
      (between? (<- (gen-real 1.0 2.0)) 1.0 2.0))
+    (test-assert
+     (between? (<- (gen-real 2.0)) 0.0 2.0))
+    (test-assert
+     (between? (<- (gen-real (range 1.0 .. 2.0))) 1.0 2.0))
     (test-error "lower bound <= upper bound"
      (gen-real 2.0 1.0)))
 
@@ -75,6 +94,8 @@
      (char-set-contains? char-set:digit (<- (gen-char char-set:digit))))
     (test-assert
      (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char #\a #\c))))
+    (test-assert
+     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char (range #\a .. #\c)))))
     (test-error "lower bound <= upper bound"
      (gen-char #\z #\a)))
 
@@ -82,17 +103,6 @@
     (test-assert (between? (<- (gen-sample (iota 10))) 0 9))
     (test-assert (in? (<- (gen-sample (list #\a #\b #\c))) (list #\a #\b #\c))))
 
-(test-group "range syntax"
-	    (test-group "exclusive"
-			(test "neg/inf to upper"
-			      (make-range (gen-current-fixnum-min)  5)
-			      (range .. 5))
-			(test "lower to pos/inf"
-			      (make-range 3 (gen-current-fixnum-max))
-			      (range 3 .. ))
-			(test "lower .. upper"
-			      (make-range 0 10)
-			      (range 0 .. 10))))
 
 (test-group "gen-sample-of"
             (test-assert ((lambda (e) (or (fixnum? e) (char? e)))
