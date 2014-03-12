@@ -16,13 +16,12 @@
 (define (range start stop)
   (cond
    ((and (not start) stop) (cons (gen-current-fixnum-min) stop))
-   ((and start (not stop)) (cons start (gen-current-fixnum-min)))
+   ((and start (not stop)) (cons start (gen-current-fixnum-max)))
    (else (cons start stop))))
 
 (define range? pair?)
 (define range-start car)
 (define range-end cdr)
-
 
 ;; generator implementation
 (define-syntax generator
@@ -53,8 +52,8 @@
 ;; the type of the arguments
 (define gen
   (case-lambda
-    ((upper lower)
-     (gen (range upper lower)))
+    ((lower upper)
+     (range->generator (range lower upper)))
     ((range)
      (range->generator range))))
 
@@ -99,7 +98,7 @@
      (apply gen-fixnum (size-spec->bounds size-spec)))
     ((lower upper)
      (unless (<= lower upper)
-       (error "upper bound must be <= lower bound" lower upper))
+       (error "lower bound must be <= upper bound" lower upper))
      (generator (%random-fixnum lower upper)))))
 
 (register-generator-for-type! fixnum? gen-fixnum)
@@ -112,7 +111,7 @@
      (apply gen-odd-fixnum (size-spec->bounds size-spec)))
     ((lower upper)
      (unless (<= lower upper)
-       (error "upper bound must be <= lower bound" lower upper))
+       (error "lower bound must be <= upper bound" lower upper))
      (let ((lower (if (odd? lower) lower (+ 1 lower)))
            (upper (if (odd? upper) upper (- upper 1))))
        (generator
@@ -127,7 +126,7 @@
      (apply gen-even-fixnum (size-spec->bounds size-spec)))
     ((lower upper)
      (unless (<= lower upper)
-       (error "upper bound must be <= lower bound" lower upper))
+       (error "lower bound must be <= upper bound" lower upper))
      (let ((lower (if (even? lower) lower (+ 1 lower)))
            (upper (if (even? upper) upper (- upper 1))))
        (generator

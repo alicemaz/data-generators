@@ -23,6 +23,18 @@
                   '(3 3 3)
                   (<- 3 (gen-sample (list 3)))))
 
+(test-group "gen"
+            (test-assert
+             (between? (<- (gen 3 4)) 3 4))
+            (test-assert
+             (between? (<- (gen #f 4)) (gen-current-fixnum-min) 4))
+            (test-assert
+             (between? (<- (gen 3 #f)) 3 (gen-current-fixnum-max)))
+            (test-assert
+             (char? (<- (gen #\a #\z))))
+            (test-assert
+             (char-set-contains? (char-set #\a #\b #\c) (<- (gen #\a #\c)))))
+
 
 (test-group "gen-constant"
             (test "it constantly returns the given value"
