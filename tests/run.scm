@@ -57,6 +57,35 @@
     (test-error "lower bound <= upper bound"
      (gen-fixnum 4 2)))
 
+(test-group "gen-even-fixnum"
+           (test-assert
+            (every even? (<- 100 (gen-even-fixnum))))
+           (test-assert
+            (between? (<- (gen-even-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
+           (test-assert
+            (between? (<- (gen-even-fixnum 4)) (gen-current-fixnum-min) 4))
+           (test-assert
+            (between? (<- (gen-even-fixnum 2 4)) 2 4))
+           (test-assert
+            (between? (<- (gen-even-fixnum (range 2 .. 4))) 2 4))
+           (test-error "lower bound <= upper bound"
+                       (gen-even-fixnum 4 2)))
+
+(test-group "gen-odd-fixnum"
+           (test-assert
+            (every odd? (<- 100 (gen-odd-fixnum))))
+           (test-assert
+            (between? (<- (gen-odd-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
+           (test-assert
+            (between? (<- (gen-odd-fixnum 4)) (gen-current-fixnum-min) 4))
+           (test-assert
+            (between? (<- (gen-odd-fixnum 2 4)) 2 4))
+           (test-assert
+            (between? (<- (gen-odd-fixnum (range 2 .. 4))) 2 4))
+           (test-error "lower bound <= upper bound"
+                       (gen-odd-fixnum 4 2)))
+
+
 (define-syntax test-fixed-range
   (syntax-rules ()
     ((_  gen lower upper)
@@ -115,6 +144,11 @@
                  (fixnum? (car (<- (gen-pair-of (gen-fixnum) (gen-fixnum))))))
     (test-assert "cdr is element of expected set"
                  (fixnum? (cdr (<- (gen-pair-of (gen-fixnum) (gen-fixnum)))))))
+
+(test-group "gen-values-of"
+            (test-assert "produces values"
+                  (receive (a b c) (<- (gen-values-of (gen-fixnum) (gen-fixnum) (gen-char)))
+                    (and (fixnum? a) (fixnum? b) (char? c)))))
 
 (test-group "gen-tuple-of"
     (test "produces tuple of given size"

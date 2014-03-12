@@ -68,8 +68,6 @@
 ;; since these generators
 ;; will most likely be used to feed some foreign code
 ;; the ranges have been selected to conform to those present on most platforms
-
-
 (define (size-spec->bounds size-spec #!optional (lower (gen-current-fixnum-min)))
   (cond
    ((range? size-spec)
@@ -88,6 +86,36 @@
      (unless (<= lower upper)
        (error "upper bound must be <= lower bound" lower upper))
      (generator (%random-fixnum lower upper)))))
+
+(define gen-odd-fixnum
+  (case-lambda
+    (()
+     (gen-odd-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
+    ((size-spec)
+     (apply gen-odd-fixnum (size-spec->bounds size-spec)))
+    ((lower upper)
+     (unless (<= lower upper)
+       (error "upper bound must be <= lower bound" lower upper))
+     (let ((lower (if (odd? lower) lower (+ 1 lower)))
+           (upper (if (odd? upper) upper (- upper 1))))
+       (generator
+        (let ((val (%random-fixnum lower upper)))
+          (if (odd? val) val (+ 1 val))))))))
+
+(define gen-even-fixnum
+  (case-lambda
+    (()
+     (gen-even-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
+    ((size-spec)
+     (apply gen-even-fixnum (size-spec->bounds size-spec)))
+    ((lower upper)
+     (unless (<= lower upper)
+       (error "upper bound must be <= lower bound" lower upper))
+     (let ((lower (if (even? lower) lower (+ 1 lower)))
+           (upper (if (even? upper) upper (- upper 1))))
+       (generator
+        (let ((val (%random-fixnum lower upper)))
+          (if (even? val) val (+ 1 val))))))))
 
 (define-syntax define-fixed-range-generator
   (syntax-rules ()
@@ -172,6 +200,10 @@
      (parameterize ((gen-current-default-size (size-spec->gen size-spec)))
        body0 ...))))
 
+(define (gen-values-of . gens)
+  (generator
+   (apply values (map <- gens))))
+
 (define (gen-sample-of . gens)
   (let ((l (length gens))
 	(gens (list->vector gens)))
@@ -239,3 +271,7 @@
 
 (define (gen-record ctor . slot-gens)
   (generator (apply ctor (map <- slot-gens))))
+
+(define (gen-transform transformer gen)
+  (generator
+   (transformer (<- gen))))
