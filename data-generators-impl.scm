@@ -268,7 +268,7 @@
 
 (define gen-vector-of
   (case-lambda
-    ((gen) (gen-vector-of gen (<- (gen-current-default-size))))
+    ((gen) (gen-vector-of gen (gen-current-default-size)))
     ((gen size-spec)
      (let ((size-gen (size-spec->gen size-spec)))
        (generator
@@ -280,7 +280,7 @@
 
 (define gen-hash-table-of
   (case-lambda
-    ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (<- (gen-current-default-size))))
+    ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (gen-current-default-size)))
     ((key-gen value-gen size-spec)
      (let ((size-gen (size-spec->gen size-spec)))
        (generator
