@@ -23,12 +23,12 @@
 (test-group "<-"
             (test "it takes one element from gen"
                   3
-                  (<- (gen-sample (list 3)))))
+                  (<- (gen-sample (list 3))))
 
-(test-group "<-*"
-            (test "it takes n elements form gen"
-                  (list 3 3 3)
-                  (<-* 3 (gen-sample (list 3)))))
+            (test "it takes n elements from gen"
+                  '(3 3 3)
+                  (<- 3 (gen-sample (list 3)))))
+
 
 (test-group "gen-constant"
             (test "it constantly returns the given value"
@@ -84,14 +84,14 @@
 
 (test-group "range syntax"
 	    (test-group "exclusive"
-			(test "neginf to upper"
-			      (cons (gen-current-fixnum-min)  4)
+			(test "neg/inf to upper"
+			      (make-range (gen-current-fixnum-min)  5)
 			      (range .. 5))
-			(test "lower to posinf"
-			      (cons 3  (sub1 (gen-current-fixnum-max)))
+			(test "lower to pos/inf"
+			      (make-range 3 (gen-current-fixnum-max))
 			      (range 3 .. ))
 			(test "lower .. upper"
-			      (cons 1  9)
+			      (make-range 0 10)
 			      (range 0 .. 10))))
 
 (test-group "gen-sample-of"
@@ -121,13 +121,13 @@
 			     (every (lambda (e) (between? e from to)) (map ?length ls)))))
        (test-group "supports size-spec"
 		   (test-assert "range"
-				(length-matches 0 10  (<-* 10 (?gen ?args ... (make-range 0 10)))))
+				(length-matches 0 10  (<- 10 (?gen ?args ... (make-range 0 10)))))
 		   (test-assert "fixed size"
-				(length-matches 10 10 (<-* 10 (?gen ?args ... 10))))
+				(length-matches 10 10 (<- 10 (?gen ?args ... 10))))
 		   (test-assert "generator"
-				(length-matches 0 10  (<-* 10 (?gen ?args ... (gen-fixnum 0 10)))))
+				(length-matches 0 10  (<- 10 (?gen ?args ... (gen-fixnum 0 10)))))
 		   (test-assert "it generates a list with different lengths"
-				(let ((ls (map ?length (<-* 10 (?gen ?args ... (gen-fixnum 0 100))))))
+				(let ((ls (map ?length (<- 10 (?gen ?args ... (gen-fixnum 0 100))))))
 				  (not (every (lambda (e) (= e (car ls))) ls)))))))))
 
 
@@ -137,9 +137,10 @@
     (test-assert "each element is part of expected set"
                  (every fixnum? (<- (gen-list-of (gen-fixnum)))))
     (test-assert "accepts ranges"
-		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 .. 10)))) 2 9))
+		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 .. 10)))) 1 10))
 
     (test-size-spec-support length (gen-list-of (gen-fixnum))))
+
 
 (test-group "gen-alist-of"
    (test-assert "produces a list"
@@ -189,4 +190,4 @@
 
 (test-group "with-size"
             (test-assert "fixed size" (= 2 (length  (with-size 2 (<- (gen-list-of (gen-fixnum)))))))
-            (test-assert "range" (between? (length  (with-size (range 2 .. 4) (<- (gen-list-of (gen-fixnum))))) 1 3)))
+            (test-assert "range" (between? (length  (with-size (range 2 .. 4) (<- (gen-list-of (gen-fixnum))))) 2 4)))

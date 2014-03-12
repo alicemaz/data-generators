@@ -11,6 +11,31 @@
 ;; A full copy of the GPL license can be found at
 ;; <http://www.gnu.org/licenses/>.
 
+
+;; ranges are used to configure some generators
+(define (make-range start stop)
+  (cons start stop))
+
+(define range? pair?)
+(define range-start car)
+(define range-end cdr)
+
+(define-syntax range
+  (syntax-rules (..)
+    ;; ((_ ... ?stop)
+    ;;  (make-range (gen-current-fixnum-min) (- ?stop 1)))
+    ;; ((_ ?start ...)
+    ;;  (make-range ?start (- (gen-current-fixnum-max) 1)))
+    ;; ((_ ?start ... ?stop)
+    ;;  (make-range (+ ?start 1) (- ?stop 1)))
+    ((_ .. ?stop)
+     (make-range (gen-current-fixnum-min) ?stop))
+    ((_ ?start ..)
+     (make-range ?start (gen-current-fixnum-max)))
+    ((_ ?start .. ?stop)
+     (make-range ?start ?stop))))
+
+;; generator implementation
 (define-syntax generator
   (syntax-rules ()
     ((_ ?body ...)
@@ -18,12 +43,12 @@
 
 (define generator? procedure?)
 
-;; take amount elements from gen and return it in a list
-(define (<-* amount gen)
-  (map (lambda _ (gen)) (iota amount)))
-
-(define (<- gen)
-  (gen))
+;; accessing elements from a generator
+(define <-
+  (case-lambda
+    ((gen) (gen))
+    ((amount gen)
+     (list-tabulate amount (lambda _ (gen))))))
 
 (define (gen-for-each rounds proc gen)
   (do ((i 1 (add1 i)))
@@ -120,25 +145,6 @@
   (let ((l (length candidates)))
     (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
 
-
-
-(define (make-range start stop)
-  (if (> start stop)
-      (error "start must be <= stop"))
-  (cons start stop))
-
-(define range? pair?)
-(define range-start car)
-(define range-end cdr)
-
-(define-syntax range
-  (syntax-rules (..)
-    ((_ .. ?stop)
-     (make-range (gen-current-fixnum-min) (- ?stop 1)))
-    ((_ ?start ..)
-     (make-range ?start (- (gen-current-fixnum-max) 1)))
-    ((_ ?start .. ?stop)
-     (make-range (+ ?start 1) (- ?stop 1)))))
 
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
