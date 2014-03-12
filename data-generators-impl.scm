@@ -69,6 +69,7 @@
       ((>= i rounds))
     (proc (<- gen))))
 
+;; primitives
 (define (gen-constant value)
   (generator value))
 
@@ -79,9 +80,6 @@
   (let ((range (- hi lo -1)))
     (inexact->exact (+ (bsd:random-integer range) lo))))
 
-;; since these generators
-;; will most likely be used to feed some foreign code
-;; the ranges have been selected to conform to those present on most platforms
 (define (size-spec->bounds size-spec #!optional (lower (gen-current-fixnum-min)))
   (cond
    ((range? size-spec)
@@ -137,6 +135,11 @@
   (syntax-rules ()
     ((_ ?name ?lower ?upper)
      (define (?name) (generator (%random-fixnum ?lower ?upper))))))
+
+
+;; since these generators
+;; will most likely be used to feed some foreign code
+;; the ranges have been selected to conform to those present on most platforms
 
 (define-fixed-range-generator gen-int8 -127 127)
 (define-fixed-range-generator gen-uint8 0 255)
