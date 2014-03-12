@@ -15,15 +15,17 @@
   (gen-current-fixnum-min
    gen-current-fixnum-max
    gen-current-default-size
-   generator <- gen-for-each
+   generator <- gen-for-each register-generator-for-type! gen
    gen-constant  gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64
    gen-bool gen-char gen-fixnum gen-even-fixnum gen-odd-fixnum gen-real gen-sample gen-sample-of gen-pair-of gen-tuple-of
    gen-list-of gen-alist-of gen-vector-of gen-string-of gen-hash-table-of gen-record gen-values-of
-   with-size range make-range size-spec->gen)
+   with-size range size-spec->gen)
   (import chicken scheme)
   (use (prefix random-bsd bsd:)
        (only ports with-output-to-string)
-       (only srfi-1 iota list-tabulate list-ref)
+       (only srfi-1 iota list-tabulate list-ref find)
        srfi-14 srfi-69 numbers)
 
-  (include "data-generators-impl.scm"))
+  (include "data-generators-impl.scm")
+
+  )

@@ -6,18 +6,6 @@
 (define (between? a x y) (and (>= a x) (<= a y)))
 
 
-(test-group "range syntax"
-	    (test-group "exclusive"
-			(test "neg/inf to upper"
-			      (make-range (gen-current-fixnum-min)  5)
-			      (range .. 5))
-			(test "lower to pos/inf"
-			      (make-range 3 (gen-current-fixnum-max))
-			      (range 3 .. ))
-			(test "lower .. upper"
-			      (make-range 0 10)
-			      (range 0 .. 10))))
-
 (test-group "gen-for-each"
     (let ((runs 1))
       (test "applies proc amount times"
@@ -53,7 +41,7 @@
     (test-assert
      (between? (<- (gen-fixnum 2 4)) 2 4))
     (test-assert
-     (between? (<- (gen-fixnum (range 2 .. 4))) 2 4))
+     (between? (<- (gen-fixnum (range 2 4))) 2 4))
     (test-error "lower bound <= upper bound"
      (gen-fixnum 4 2)))
 
@@ -67,7 +55,7 @@
            (test-assert
             (between? (<- (gen-even-fixnum 2 4)) 2 4))
            (test-assert
-            (between? (<- (gen-even-fixnum (range 2 .. 4))) 2 4))
+            (between? (<- (gen-even-fixnum (range 2 4))) 2 4))
            (test-error "lower bound <= upper bound"
                        (gen-even-fixnum 4 2)))
 
@@ -81,7 +69,7 @@
            (test-assert
             (between? (<- (gen-odd-fixnum 2 4)) 2 4))
            (test-assert
-            (between? (<- (gen-odd-fixnum (range 2 .. 4))) 2 4))
+            (between? (<- (gen-odd-fixnum (range 2 4))) 2 4))
            (test-error "lower bound <= upper bound"
                        (gen-odd-fixnum 4 2)))
 
@@ -112,7 +100,7 @@
     (test-assert
      (between? (<- (gen-real 2.0)) 0.0 2.0))
     (test-assert
-     (between? (<- (gen-real (range 1.0 .. 2.0))) 1.0 2.0))
+     (between? (<- (gen-real (range 1.0 2.0))) 1.0 2.0))
     (test-error "lower bound <= upper bound"
      (gen-real 2.0 1.0)))
 
@@ -124,7 +112,7 @@
     (test-assert
      (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char #\a #\c))))
     (test-assert
-     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char (range #\a .. #\c)))))
+     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char (range #\a #\c)))))
     (test-error "lower bound <= upper bound"
      (gen-char #\z #\a)))
 
@@ -165,7 +153,7 @@
 			     (every (lambda (e) (between? e from to)) (map ?length ls)))))
        (test-group "supports size-spec"
 		   (test-assert "range"
-				(length-matches 0 10  (<- 10 (?gen ?args ... (make-range 0 10)))))
+				(length-matches 0 10  (<- 10 (?gen ?args ... (range 0 10)))))
 		   (test-assert "fixed size"
 				(length-matches 10 10 (<- 10 (?gen ?args ... 10))))
 		   (test-assert "generator"
@@ -181,7 +169,7 @@
     (test-assert "each element is part of expected set"
                  (every fixnum? (<- (gen-list-of (gen-fixnum)))))
     (test-assert "accepts ranges"
-		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 .. 10)))) 1 10))
+		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 10)))) 1 10))
 
     (test-size-spec-support length (gen-list-of (gen-fixnum))))
 
@@ -234,4 +222,20 @@
 
 (test-group "with-size"
             (test-assert "fixed size" (= 2 (length  (with-size 2 (<- (gen-list-of (gen-fixnum)))))))
-            (test-assert "range" (between? (length  (with-size (range 2 .. 4) (<- (gen-list-of (gen-fixnum))))) 2 4)))
+            (test-assert "range" (between? (length  (with-size (range 2 4) (<- (gen-list-of (gen-fixnum))))) 2 4)))
+
+
+
+(use data-generators-literals)
+
+(test-group "range syntax"
+	    (test-group "exclusive"
+			(test "neg/inf to upper"
+			      (range (gen-current-fixnum-min)  5)
+			      #i[.. 5])
+			(test "lower to pos/inf"
+			      (range 3 (gen-current-fixnum-max))
+			      #i[3 ..])
+			(test "lower .. upper"
+			      (range 0 10)
+			      #i[0 .. 10])))

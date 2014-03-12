@@ -13,27 +13,16 @@
 
 
 ;; ranges are used to configure some generators
-(define (make-range start stop)
-  (cons start stop))
+(define (range start stop)
+  (cond
+   ((and (not start) stop) (cons (gen-current-fixnum-min) stop))
+   ((and start (not stop)) (cons start (gen-current-fixnum-min)))
+   (else (cons start stop))))
 
 (define range? pair?)
 (define range-start car)
 (define range-end cdr)
 
-(define-syntax range
-  (syntax-rules (..)
-    ;; ((_ ... ?stop)
-    ;;  (make-range (gen-current-fixnum-min) (- ?stop 1)))
-    ;; ((_ ?start ...)
-    ;;  (make-range ?start (- (gen-current-fixnum-max) 1)))
-    ;; ((_ ?start ... ?stop)
-    ;;  (make-range (+ ?start 1) (- ?stop 1)))
-    ((_ .. ?stop)
-     (make-range (gen-current-fixnum-min) ?stop))
-    ((_ ?start ..)
-     (make-range ?start (gen-current-fixnum-max)))
-    ((_ ?start .. ?stop)
-     (make-range ?start ?stop))))
 
 ;; generator implementation
 (define-syntax generator
@@ -42,6 +31,32 @@
      (lambda () ?body ...))))
 
 (define generator? procedure?)
+
+(define (maybe-apply v p t) (if (p v) (t v) v))
+
+(define type-generator-map '())
+
+(define (register-generator-for-type! type-pred gen)
+  (set! type-generator-map (cons (cons type-pred gen) type-generator-map)))
+
+(define (find-generator-for value)
+  (let ((match (find (lambda (p) ((car p) value)) type-generator-map)))
+    (if match (cdr match) #f)))
+
+(define (range->generator rng)
+  (let ((gen (find-generator-for (range-start rng))))
+    (unless gen
+      (error "Could not find generator for given range. Did you register one for that type?" rng))
+    (gen rng)))
+
+;; convenience procedure to quickly create a generator for a given range that dispatches on
+;; the type of the arguments
+(define gen
+  (case-lambda
+    ((upper lower)
+     (gen (range upper lower)))
+    ((range)
+     (range->generator range))))
 
 ;; accessing elements from a generator
 (define <-
@@ -86,6 +101,8 @@
      (unless (<= lower upper)
        (error "upper bound must be <= lower bound" lower upper))
      (generator (%random-fixnum lower upper)))))
+
+(register-generator-for-type! fixnum? gen-fixnum)
 
 (define gen-odd-fixnum
   (case-lambda
@@ -152,6 +169,8 @@
        (error "lower bound must be <= upper bound" lower upper))
      (generator (%random-real (- upper lower) lower)))))
 
+(register-generator-for-type! flonum? gen-real)
+
 (define (gen-bool)
   (generator (zero? (bsd:random-fixnum 2))))
 
@@ -162,8 +181,6 @@
      (else (loop (char-set-cursor-next charset cursor) (sub1 i))))))
 
 (define (boundaries->charset lower upper)
-  (define (maybe-apply v p t) (if (p v) (t v) v))
-
   (let ((lo (max 0 (maybe-apply lower char? char->integer)))
         (hi (max 0 (min 255 (maybe-apply upper char? char->integer)))))
     (unless (<= lo hi)
@@ -185,6 +202,8 @@
        (error "lower bound must be <= upper bound" lower upper))
      (let ((charset (boundaries->charset lower upper)))
        (generator (%random-char charset))))))
+
+(register-generator-for-type! char? gen-char)
 
 (define (gen-sample candidates)
   (let ((l (length candidates)))
