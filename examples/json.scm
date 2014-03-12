@@ -14,11 +14,11 @@
        (<- (gen-sample-of (gen-json-string) (gen-json-null) (gen-json-number))))))
 
 (define (gen-json-string)
-  (with-size (0 . 20)
+  (with-size (range 0 20)
     (gen-string-of (gen-char char-set:letter+digit))))
 
 (define (gen-json-object nesting)
-  (with-size (0 . 5)
+  (with-size (range 0 5)
     (gen-vector-of (gen-pair-of (gen-json-string) (gen-json-value (sub1 nesting))))))
 
 (define (gen-json-null)
@@ -28,7 +28,7 @@
   (gen-sample-of (gen-fixnum) (gen-real)))
 
 (define (gen-json-array nesting)
-  (with-size (0 . 5)
+  (with-size (range 0 5)
     (gen-list-of (gen-json-value (sub1 nesting)))))
 
 (gen-for-each 10 print (gen-json-doc))
