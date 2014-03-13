@@ -3,5 +3,12 @@
 * TODO reduce API for generators
   Remove the (some-gen size) API. So that generators either take have the form (gen start stop) or (gen range)
 * TODO add benchmarks
+  - The generation of strings is currently slow. We need to test a different implementation here
+    This is most likely due to the slow algorithm working with char-set iterators.
+    A better approach would be to enumerate the chars in a vector and use that to draw the random chars from.
+    This can be bad for big charsets so we probably don't want to apply that optimizations all the time
+  - Check that no generator creates other generators needlessly. The creation is the expensive operation
+    and can probably be done upfront
 
 * TODO update gen-for-each to pass the index of the sample to the proc
+* TODO add generator for keywords symbols and procedures
