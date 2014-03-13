@@ -1,0 +1,7 @@
+
+
+* TODO reduce API for generators
+  Remove the (some-gen size) API. So that generators either take have the form (gen start stop) or (gen range)
+* TODO add benchmarks
+
+* TODO update gen-for-each to pass the index of the sample to the proc
