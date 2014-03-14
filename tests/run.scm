@@ -1,3 +1,4 @@
+
 (use test)
 
 (use data-generators numbers)
@@ -5,6 +6,7 @@
 (define (in? x ls) (not (null? (member x ls))))
 (define (between? a x y) (and (>= a x) (<= a y)))
 
+(test-begin "data-generators")
 
 (test-group "gen-for-each"
     (let ((runs 1))
@@ -272,5 +274,6 @@
             ;; (test-error "unsupported generator"
             ;;             #g[#t .. #f]))
 
+(test-end "data-generators")
 
 (test-exit)

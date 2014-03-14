@@ -24,6 +24,7 @@
   (use (prefix random-bsd bsd:)
        (only ports with-output-to-string)
        (only srfi-1 iota list-tabulate list-ref find)
+       (only data-structures o)
        srfi-14 srfi-69 numbers)
 
   (include "data-generators-impl.scm")
