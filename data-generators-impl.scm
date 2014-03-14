@@ -195,7 +195,7 @@
   (let ((lo (max 0 (maybe-apply lower char? char->integer)))
         (hi (max 0 (min 255 (maybe-apply upper char? char->integer)))))
     (unless (<= lo hi)
-      (error 'sizer->charset "lower bound must be <= upper bound" lower upper))
+      (error "lower bound must be <= upper bound" lower upper))
     (let ((size (add1 (- hi lo))))
       (do ((char lo (add1 char))
            (i 0 (add1 i))
@@ -218,6 +218,8 @@
          (gen-char (range-start charset-or-range) (range-end charset-or-range)))
         (else (error "Invalid argument. Must be either range or charset" charset-or-range))))
       ((lower upper)
+       (unless (and (char? lower) (char? upper))
+         (error "expected two characters but got " lower " and " upper))
        (unless (char<=? lower upper)
          (error "lower bound must be <= upper bound" lower upper))
        (%char-gen (boundaries->char-vector lower upper))))))
@@ -225,9 +227,9 @@
 (register-generator-for-type! char? gen-char)
 
 (define (gen-sample candidates)
-  (let ((l (length candidates)))
-    (generator  (list-ref candidates (<- (gen-fixnum 0 (sub1 l)))))))
-
+  (let* ((candidates (list->vector candidates))
+         (index-gen (gen-fixnum 0 (sub1 (vector-length candidates)))))
+    (generator (vector-ref candidates (<- index-gen)))))
 
 ;; combinators
 (define gen-current-default-size (make-parameter (gen-uint8)))
