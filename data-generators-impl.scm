@@ -97,15 +97,31 @@
     (list (range-start size-spec) (range-end size-spec)))
    (else (error "invalid size specification" size-spec))))
 
+(define-syntax safe-apply-range
+  (syntax-rules ()
+    ((_ ?proc ?rng)
+     (begin
+       (unless (range? ?rng)
+         (error (quote ?proc) "expected range got " ?rng))
+       (?proc (range-start ?rng) (range-end ?rng))))))
+
+(define-syntax assert-valid-bounds
+  (syntax-rules ()
+    ((_ ?lower ?upper)
+     (begin
+       (unless (and (number? ?lower) (number? ?upper))
+         (error "expected two numbers but got " ?lower " and " ?upper))
+       (unless (<= ?lower ?upper)
+         (error "lower bound must be less or equal than upper bound"))))))
+
 (define gen-fixnum
   (case-lambda
     (()
      (gen-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
-    ((size-spec)
-     (apply gen-fixnum (size-spec->bounds size-spec)))
+    ((range)
+     (safe-apply-range gen-fixnum range))
     ((lower upper)
-     (unless (<= lower upper)
-       (error "lower bound must be <= upper bound" lower upper))
+     (assert-valid-bounds lower upper)
      (generator (%random-fixnum lower upper)))))
 
 (register-generator-for-type! fixnum? gen-fixnum)
@@ -114,11 +130,10 @@
   (case-lambda
     (()
      (gen-odd-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
-    ((size-spec)
-     (apply gen-odd-fixnum (size-spec->bounds size-spec)))
+    ((range)
+     (safe-apply-range gen-odd-fixnum range))
     ((lower upper)
-     (unless (<= lower upper)
-       (error "lower bound must be <= upper bound" lower upper))
+     (assert-valid-bounds lower upper)
      (let ((lower (if (odd? lower) lower (+ 1 lower)))
            (upper (if (odd? upper) upper (- upper 1))))
        (generator
@@ -129,11 +144,10 @@
   (case-lambda
     (()
      (gen-even-fixnum (gen-current-fixnum-min) (gen-current-fixnum-max)))
-    ((size-spec)
-     (apply gen-even-fixnum (size-spec->bounds size-spec)))
+    ((range)
+     (safe-apply-range gen-even-fixnum range))
     ((lower upper)
-     (unless (<= lower upper)
-       (error "lower bound must be <= upper bound" lower upper))
+     (assert-valid-bounds lower upper)
      (let ((lower (if (even? lower) lower (+ 1 lower)))
            (upper (if (even? upper) upper (- upper 1))))
        (generator
@@ -162,11 +176,10 @@
   (case-lambda
     (()
      (gen-real 0.0 1.0))
-    ((size-spec)
-     (apply gen-real (size-spec->bounds size-spec 0.0)))
+    ((range)
+     (safe-apply-range gen-real range))
     ((lower upper)
-     (unless (<= lower upper)
-       (error "lower bound must be <= upper bound" lower upper))
+     (assert-valid-bounds lower upper)
      (generator (%random-real (- upper lower) lower)))))
 
 (register-generator-for-type! flonum? gen-real)
