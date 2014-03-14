@@ -194,9 +194,11 @@
 
 (register-generator-for-type! flonum? gen-real)
 
+(: gen-bool (-> (procedure () boolean)))
 (define (gen-bool)
   (generator (zero? (bsd:random-fixnum 2))))
 
+(: booleans (-> (procedure () boolean)))
 (define booleans gen-bool)
 
 (define char-set->vector (o list->vector char-set->list))
