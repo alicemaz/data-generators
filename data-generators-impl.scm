@@ -12,7 +12,23 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; ranges are used to configure some generators
+;;== random primitives
+(define (%random-fixnum lo hi)
+  (let ((range (- hi lo -1)))
+    (inexact->exact (+ (bsd:random-integer range) lo))))
+
+;; currently this only return flonums
+(define (%random-real #!optional (size 1.0) (start 0.0))
+  (let ((ub (+ size start)))
+    (%clamp (+ start (* size (bsd:random-real))) start ub)))
+
+(define (%clamp val lower upper)
+  (cond
+   ((> val upper) upper)
+   ((and (> val lower) (<= val upper)) val)
+   (else lower)))
+
+;;== ranges are used to configure some generators
 (define (range start stop)
   (cond
    ((and (not start) stop) (cons (gen-current-fixnum-min) stop))
@@ -23,7 +39,7 @@
 (define range-start car)
 (define range-end cdr)
 
-;; generator implementation
+;;== generator implementation
 (define-syntax generator
   (syntax-rules ()
     ((_ ?body ...)
@@ -31,7 +47,27 @@
 
 (define generator? procedure?)
 
-(define (maybe-apply v p t) (if (p v) (t v) v))
+;;== accessing elements from a generator
+(define <-
+  (case-lambda
+    ((gen) (gen))
+    ((amount gen)
+     (list-tabulate amount (lambda _ (gen))))))
+
+(define (gen-for-each rounds proc gen)
+  (do ((i 1 (add1 i)))
+      ((>= i rounds))
+    (proc (<- gen))))
+
+;;== generic generator
+;; convenience procedure to quickly create a generator for a given range that dispatches on
+;; the type of the arguments
+(define gen
+  (case-lambda
+    ((lower upper)
+     (range->generator (range lower upper)))
+    ((range)
+     (range->generator range))))
 
 (define type-generator-map '())
 
@@ -48,37 +84,12 @@
       (error "Could not find generator for given range. Did you register one for that type?" rng))
     (gen rng)))
 
-;; convenience procedure to quickly create a generator for a given range that dispatches on
-;; the type of the arguments
-(define gen
-  (case-lambda
-    ((lower upper)
-     (range->generator (range lower upper)))
-    ((range)
-     (range->generator range))))
-
-;; accessing elements from a generator
-(define <-
-  (case-lambda
-    ((gen) (gen))
-    ((amount gen)
-     (list-tabulate amount (lambda _ (gen))))))
-
-(define (gen-for-each rounds proc gen)
-  (do ((i 1 (add1 i)))
-      ((>= i rounds))
-    (proc (<- gen))))
-
-;; primitives
-(define (gen-constant value)
-  (generator value))
-
+;;== primitive generators
 (define gen-current-fixnum-min (make-parameter -65536))
 (define gen-current-fixnum-max (make-parameter 65536))
 
-(define (%random-fixnum lo hi)
-  (let ((range (- hi lo -1)))
-    (inexact->exact (+ (bsd:random-integer range) lo))))
+(define (gen-constant value)
+  (generator value))
 
 (define (size-spec->bounds size-spec #!optional (lower (gen-current-fixnum-min)))
   (cond
@@ -136,7 +147,6 @@
     ((_ ?name ?lower ?upper)
      (define (?name) (generator (%random-fixnum ?lower ?upper))))))
 
-
 ;; since these generators
 ;; will most likely be used to feed some foreign code
 ;; the ranges have been selected to conform to those present on most platforms
@@ -149,16 +159,6 @@
 (define-fixed-range-generator gen-uint32 0 4294967295)
 (define-fixed-range-generator gen-int64 -9223372036854775807 9223372036854775807)
 (define-fixed-range-generator gen-uint64 0 18446744073709551615)
-
-(define (%clamp val lower upper)
-  (cond
-   ((> val upper) upper)
-   ((and (> val lower) (<= val upper)) val)
-   (else lower)))
-
-(define (%random-real #!optional (size 1.0) (start 0.0))
-  (let ((ub (+ size start)))
-    (%clamp (+ start (* size (bsd:random-real))) start ub)))
 
 (define gen-real
   (case-lambda
@@ -179,6 +179,8 @@
 (define char-set->vector (o list->vector char-set->list))
 
 (define (boundaries->char-vector lower upper)
+  (define (maybe-apply v p t) (if (p v) (t v) v))
+
   (let ((lo (max 0 (maybe-apply lower char? char->integer)))
         (hi (max 0 (min 255 (maybe-apply upper char? char->integer)))))
     (unless (<= lo hi)
