@@ -203,6 +203,10 @@
                          (<- (gen-string-of (gen-char char-set:graphic))))))
     (test-size-spec-support string-length (gen-string-of (gen-char))))
 
+(test-group "gen-symbol"
+            (test-assert "produces a symbol"
+                         (symbol? (<- (gen-symbol-of)))))
+
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
                  (hash-table? (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))

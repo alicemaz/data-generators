@@ -124,6 +124,8 @@
      (assert-valid-bounds lower upper)
      (generator (%random-fixnum lower upper)))))
 
+(define fixnums gen-fixnum)
+
 (register-generator-for-type! fixnum? gen-fixnum)
 
 (define gen-odd-fixnum
@@ -140,6 +142,8 @@
         (let ((val (%random-fixnum lower upper)))
           (if (odd? val) val (+ 1 val))))))))
 
+(define odd-fixnums gen-odd-fixnum)
+
 (define gen-even-fixnum
   (case-lambda
     (()
@@ -153,6 +157,8 @@
        (generator
         (let ((val (%random-fixnum lower upper)))
           (if (even? val) val (+ 1 val))))))))
+
+(define even-fixnums gen-even-fixnum)
 
 (define-syntax define-fixed-range-generator
   (syntax-rules ()
@@ -182,10 +188,14 @@
      (assert-valid-bounds lower upper)
      (generator (%random-real (- upper lower) lower)))))
 
+(define flonums gen-real)
+
 (register-generator-for-type! flonum? gen-real)
 
 (define (gen-bool)
   (generator (zero? (bsd:random-fixnum 2))))
+
+(define booleans gen-bool)
 
 (define char-set->vector (o list->vector char-set->list))
 
@@ -223,6 +233,8 @@
        (unless (char<=? lower upper)
          (error "lower bound must be <= upper bound" lower upper))
        (%char-gen (boundaries->char-vector lower upper))))))
+
+(define chars gen-char)
 
 (register-generator-for-type! char? gen-char)
 
@@ -287,6 +299,16 @@
        (generator
         (list->string (<- (<- size-gen) gen)))))))
 
+(define gen-string gen-string-of)
+
+(define (gen-symbol-of)
+  (case-lambda
+    (()
+     (gen-symbol-of char-set:letter+digit))
+    ((char-gen)
+     (gen-transform string->symbol (gen-string-of char-gen)))))
+
+(define gen-symbol gen-symbol-of)
 
 (define gen-vector-of
   (case-lambda
@@ -302,13 +324,16 @@
 
 (define gen-hash-table-of
   (case-lambda
-    ((key-gen value-gen) (gen-hash-table-of key-gen value-gen (gen-current-default-size)))
+    ((key-gen value-gen)
+     (gen-hash-table-of key-gen value-gen (gen-current-default-size) eq?))
     ((key-gen value-gen size-spec)
+     (gen-hash-table-of key-gen value-gen size-spec eq?))
+    ((key-gen value-gen size-spec equal?)
      (let ((size-gen (size-spec->gen size-spec)))
        (generator
 	(let ((size (<- size-gen)))
 	  (do ((i 0 (add1 i))
-	       (ht (make-hash-table)))
+	       (ht (make-hash-table equal?)))
 	      ((>= i size) ht)
 	    (hash-table-set! ht (<- key-gen) (<- value-gen)))))))))
 
