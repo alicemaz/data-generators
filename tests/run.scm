@@ -240,39 +240,38 @@
 
 
 
-;; (use data-generators-literals)
+(use data-generators-literals)
 
-;; (test-group "range syntax"
-;; 	    (test-group "inclusive"
-;; 			(test "neg/inf to upper"
-;; 			      (range (gen-current-fixnum-min)  5)
-;; 			      #i[.. 5])
-;; 			(test "lower to pos/inf"
-;; 			      (range 3 (gen-current-fixnum-max))
-;; 			      #i[3 ..])
-;; 			(test "lower .. upper"
-;; 			      (range 0 10)
-;; 			      #i[0 .. 10]))
-;;             (test-group "exclusive"
-;; 			(test "neg/inf to upper"
-;; 			      (range (add1 (gen-current-fixnum-min)) 5)
-;; 			      #i[... 5])
-;; 			(test "lower to pos/inf"
-;; 			      (range 3 (sub1 (gen-current-fixnum-max)))
-;; 			      #i[3 ...])
-;; 			(test "lower ... upper"
-;; 			      (range 1 9)
-;; 			      #i[0 ... 10])))
+(test-group "range syntax"
+	    (test-group "inclusive"
+			(test "neg/inf to upper"
+			      (range (gen-current-fixnum-min)  5)
+			      #i[.. 5])
+			(test "lower to pos/inf"
+			      (range 3 (gen-current-fixnum-max))
+			      #i[3 ..])
+			(test "lower .. upper"
+			      (range 0 10)
+			      #i[0 .. 10]))
+            (test-group "exclusive"
+			(test "neg/inf to upper"
+			      (range (add1 (gen-current-fixnum-min)) 5)
+			      #i[... 5])
+			(test "lower to pos/inf"
+			      (range 3 (sub1 (gen-current-fixnum-max)))
+			      #i[3 ...])
+			(test "lower ... upper"
+			      (range 1 9)
+			      #i[0 ... 10])))
 
-;; (test-group "generator syntax"
-;;             (test-assert (fixnum? (<- #g[1.0 .. 2.0]))))
-
-            ;; (test-assert "#g[1.0 .. 4.0]"
-            ;;              (flonum? (<- #g[1.0 .. 4.0])))
-            ;; (test-assert "#g[#\a .. #\z]"
-            ;;              (char? (<- #g[#\a .. #\z])))
-            ;; (test-error "unsupported generator"
-            ;;             #g[#t .. #f]))
+(test-group "generator syntax"
+            (test-assert (fixnum? (<- #g[1 .. 2])))
+            (test-assert "#g[1.0 .. 4.0]"
+                         (flonum? (<- #g[1.0 .. 4.0])))
+            (test-assert "#g[#\\a .. #\\z]"
+                         (char? (<- #g[ #\a .. #\z ])))
+            (test-error "unsupported generator"
+                        #g[#t .. #f]))
 
 (test-end "data-generators")
 

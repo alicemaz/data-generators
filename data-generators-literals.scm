@@ -27,7 +27,7 @@
     (let* ((c (read-char port))
            (c (cond ((assq c literal-delimiters) => cdr)
                     (else c))))
-      (finish (read-range-literal/delim c port))))
+      (finish (read-literal/delim c port))))
 
   (define (read-literal/delim delim port)
     (let loop ((c (peek-char port)) (exps '()))
