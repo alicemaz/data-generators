@@ -11,7 +11,7 @@
  '("data-generators.so" "data-generators.import.so")
  `((version ,version)))
 
-; (install-extension
-;  'data-generators-literals
-;  '("data-generators-literals.so" "data-generators-literals.import.so")
-;  `((version ,version)))
+(install-extension
+ 'data-generators-literals
+ '("data-generators-literals.so" "data-generators-literals.import.so")
+ `((version ,version)))

@@ -2,7 +2,7 @@
   (run-benchmark)
 
   (import chicken scheme)
-  (use benchmark srfi-14 srfi-69 srfi-1 (prefix random-bsd bsd:))
+  (use benchmark srfi-14 srfi-69 srfi-1 (prefix random-bsd bsd:) numbers)
 
   (include "../data-generators-impl.scm")
 
@@ -57,7 +57,7 @@
 (module test-impl
   (run-benchmark)
   (import chicken scheme)
-  (use benchmark srfi-14 srfi-69 srfi-1 (prefix random-bsd bsd:) data-structures ports)
+  (use benchmark srfi-14 srfi-69 srfi-1 (prefix random-bsd bsd:) data-structures ports numbers)
 
   (include "../data-generators-impl.scm")
 
