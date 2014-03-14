@@ -2,7 +2,7 @@
 
 * TODO reduce API for generators
   Remove the (some-gen size) API. So that generators either take have the form (gen start stop) or (gen range)
-* TODO add benchmarks
+* STARTED add benchmarks
   - The generation of strings is currently slow. We need to test a different implementation here
     This is most likely due to the slow algorithm working with char-set iterators.
     A better approach would be to enumerate the chars in a vector and use that to draw the random chars from.
