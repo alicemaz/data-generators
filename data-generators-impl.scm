@@ -226,9 +226,10 @@
    (apply values (map <- gens))))
 
 (define (gen-sample-of . gens)
-  (let ((l (length gens))
-	(gens (list->vector gens)))
-    (generator (<- (vector-ref gens (<- (gen-fixnum 0 (sub1 l))))))))
+  (let* ((l (length gens))
+	(gens (list->vector gens))
+        (index-gen (gen-fixnum 0 (sub1 l))))
+    (generator (<- (vector-ref gens (<- index-gen))))))
 
 (define (gen-pair-of car-gen cdr-gen)
   (generator
