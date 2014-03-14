@@ -57,7 +57,7 @@
 (define (gen-for-each rounds proc gen)
   (do ((i 1 (add1 i)))
       ((>= i rounds))
-    (proc (<- gen))))
+    (proc (<- gen) i)))
 
 ;;== generic generator
 ;; convenience procedure to quickly create a generator for a given range that dispatches on
@@ -95,8 +95,6 @@
   (cond
    ((range? size-spec)
     (list (range-start size-spec) (range-end size-spec)))
-   ((number? size-spec)
-    (list lower size-spec))
    (else (error "invalid size specification" size-spec))))
 
 (define gen-fixnum

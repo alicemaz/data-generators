@@ -13,7 +13,7 @@
       (test "applies proc amount times"
             3
             (begin
-              (gen-for-each 3 (lambda (value) (set! runs (add1 runs))) (gen-list-of (gen-fixnum)))
+              (gen-for-each 3 (lambda (value idx) (set! runs (add1 runs))) (gen-list-of (gen-fixnum)))
               runs))))
 
 (test-group "<-"
@@ -51,8 +51,6 @@
     (test-assert
      (between? (<- (gen-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
     (test-assert
-     (between? (<- (gen-fixnum 4)) (gen-current-fixnum-min) 4))
-    (test-assert
      (between? (<- (gen-fixnum 2 4)) 2 4))
     (test-assert
      (between? (<- (gen-fixnum (range 2 4))) 2 4))
@@ -65,8 +63,6 @@
            (test-assert
             (between? (<- (gen-even-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
            (test-assert
-            (between? (<- (gen-even-fixnum 4)) (gen-current-fixnum-min) 4))
-           (test-assert
             (between? (<- (gen-even-fixnum 2 4)) 2 4))
            (test-assert
             (between? (<- (gen-even-fixnum (range 2 4))) 2 4))
@@ -78,8 +74,6 @@
             (every odd? (<- 100 (gen-odd-fixnum))))
            (test-assert
             (between? (<- (gen-odd-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
-           (test-assert
-            (between? (<- (gen-odd-fixnum 4)) (gen-current-fixnum-min) 4))
            (test-assert
             (between? (<- (gen-odd-fixnum 2 4)) 2 4))
            (test-assert
@@ -108,11 +102,7 @@
     (test-assert
      (between? (<- (gen-real)) 0.0 1.0))
     (test-assert
-     (between? (<- (gen-real 1.0)) 0.0 1.0))
-    (test-assert
      (between? (<- (gen-real 1.0 2.0)) 1.0 2.0))
-    (test-assert
-     (between? (<- (gen-real 2.0)) 0.0 2.0))
     (test-assert
      (between? (<- (gen-real (range 1.0 2.0))) 1.0 2.0))
     (test-error "lower bound <= upper bound"
