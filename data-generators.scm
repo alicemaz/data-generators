@@ -18,7 +18,7 @@
    generator <- gen-for-each register-generator-for-type! gen
    gen-constant  gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64 fixnums even-fixnums odd-fixnums flonums
    gen-bool booleans gen-char chars gen-fixnum gen-even-fixnum gen-odd-fixnum gen-real gen-sample gen-sample-of gen-pair-of gen-tuple-of
-   gen-list-of gen-alist-of gen-vector-of gen-string-of gen-symbol-of gen-hash-table-of gen-record gen-values-of gen-transform
+   gen-list-of gen-alist-of gen-vector-of gen-string-of gen-symbol-of gen-symbol gen-hash-table-of gen-record gen-values-of gen-transform
    with-size range size-spec->gen)
   (import chicken scheme)
   (use (prefix random-bsd bsd:)

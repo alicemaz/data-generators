@@ -54,6 +54,8 @@
      (between? (<- (gen-fixnum 2 4)) 2 4))
     (test-assert
      (between? (<- (gen-fixnum (range 2 4))) 2 4))
+    (test-assert
+     (fixnum? (<- (fixnums))))
     (test-error "lower bound <= upper bound"
      (gen-fixnum 4 2)))
 
@@ -66,6 +68,8 @@
             (between? (<- (gen-even-fixnum 2 4)) 2 4))
            (test-assert
             (between? (<- (gen-even-fixnum (range 2 4))) 2 4))
+           (test-assert
+            (even? (<- (even-fixnums))))
            (test-error "lower bound <= upper bound"
                        (gen-even-fixnum 4 2)))
 
@@ -78,6 +82,8 @@
             (between? (<- (gen-odd-fixnum 2 4)) 2 4))
            (test-assert
             (between? (<- (gen-odd-fixnum (range 2 4))) 2 4))
+           (test-assert
+            (odd? (<- (odd-fixnums))))
            (test-error "lower bound <= upper bound"
                        (gen-odd-fixnum 4 2)))
 

@@ -13,11 +13,13 @@
 
 
 ;;== random primitives
+(: %random-fixnum ((or fixnum float) (or fixnum float) -> fixnum))
 (define (%random-fixnum lo hi)
   (let ((range (- hi lo -1)))
     (inexact->exact (+ (bsd:random-integer range) lo))))
 
 ;; currently this only return flonums
+(: %random-real (float float -> float))
 (define (%random-real #!optional (size 1.0) (start 0.0))
   (let ((ub (+ size start)))
     (%clamp (+ start (* size (bsd:random-real))) start ub)))
@@ -175,7 +177,7 @@
 (define-fixed-range-generator gen-uint16 0 65535)
 (define-fixed-range-generator gen-int32 -2147483647 2147483647)
 (define-fixed-range-generator gen-uint32 0 4294967295)
-(define-fixed-range-generator gen-int64 -9223372036854775807 9223372036854775807)
+(define-fixed-range-generator gen-int64  -9223372036854775807 9223372036854775807)
 (define-fixed-range-generator gen-uint64 0 18446744073709551615)
 
 (define gen-real
@@ -301,10 +303,10 @@
 
 (define gen-string gen-string-of)
 
-(define (gen-symbol-of)
+(define gen-symbol-of
   (case-lambda
     (()
-     (gen-symbol-of char-set:letter+digit))
+     (gen-symbol-of (gen-char char-set:letter+digit)))
     ((char-gen)
      (gen-transform string->symbol (gen-string-of char-gen)))))
 
