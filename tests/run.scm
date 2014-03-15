@@ -114,6 +114,11 @@
     (test-error "lower bound <= upper bound"
      (gen-real 2.0 1.0)))
 
+(test-group "gen-series"
+            (test "works for integers"
+             (list 1 2 3 4)
+             (<- 4 (gen-series 1 4 add1))))
+
 (test-group "gen-char"
     (test-assert
      (char-set-contains? char-set:graphic (<- (gen-char))))

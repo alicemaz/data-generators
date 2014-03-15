@@ -50,12 +50,14 @@
 
 (define generator? procedure?)
 
+
+
 ;;== accessing elements from a generator
 (define <-
   (case-lambda
     ((gen) (gen))
     ((amount gen)
-     (list-tabulate amount (lambda _ (gen))))))
+     (map (lambda _ (gen)) (iota amount)))))
 
 (define (gen-for-each rounds proc gen)
   (do ((i 1 (add1 i)))
@@ -102,11 +104,11 @@
 
 (define-syntax safe-apply-range
   (syntax-rules ()
-    ((_ ?proc ?rng)
+    ((_ ?proc ?rng ?args ...)
      (begin
        (unless (range? ?rng)
          (error (quote ?proc) "expected range got " ?rng))
-       (?proc (range-start ?rng) (range-end ?rng))))))
+       (?proc (range-start ?rng) (range-end ?rng) ?args ...)))))
 
 (define-syntax assert-valid-bounds
   (syntax-rules ()
@@ -194,6 +196,20 @@
 (define flonums gen-real)
 
 (register-generator-for-type! flonum? gen-real)
+
+
+(define gen-series
+  (case-lambda
+    (() (gen-series (gen-current-fixnum-min) (gen-current-fixnum-max) add1))
+    ((range step)
+     (safe-apply-range gen-series range step))
+    ((lower upper step)
+     (assert-valid-bounds lower upper)
+     (let ((next lower))
+       (generator
+        (let ((actual next))
+          (set! next (if (> actual upper) lower (step actual)))
+          actual))))))
 
 (: gen-bool (-> (procedure () boolean)))
 (define (gen-bool)
@@ -287,7 +303,7 @@
     ((gen size-spec)
      (let ((size-gen (size-spec->gen size-spec)))
        (generator
-	(list-tabulate (<- size-gen) (lambda _ (<- gen))))))))
+        (<- (<- size-gen) gen))))))
 
 (define  gen-alist-of
   (case-lambda
