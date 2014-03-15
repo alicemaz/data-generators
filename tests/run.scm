@@ -4,7 +4,19 @@
 (use data-generators numbers)
 
 (define (in? x ls) (not (null? (member x ls))))
+(define (all-in? list-of-values ls)
+  (every (lambda (val) (in? val ls)) list-of-values))
+
+(define (every-in pred ls)
+  (every (lambda (subls) (every pred subls)) ls))
+
 (define (between? a x y) (and (>= a x) (<= a y)))
+
+(define (all-between? ls x y)
+  (every (lambda (v) (between? v x y)) ls))
+
+(define (<-* gen)
+  (<- 50 gen))
 
 (test-begin "data-generators")
 
@@ -27,63 +39,62 @@
 
 (test-group "gen"
             (test-assert
-             (between? (<- (gen 3 4)) 3 4))
+             (all-between? (<-* (gen 3 4)) 3 4))
             (test-assert
-             (between? (<- (gen #f 4)) (gen-current-fixnum-min) 4))
+             (all-between? (<-* (gen #f 4)) (gen-current-fixnum-min) 4))
             (test-assert
-             (between? (<- (gen 3 #f)) 3 (gen-current-fixnum-max)))
+             (all-between? (<-* (gen 3 #f)) 3 (gen-current-fixnum-max)))
             (test-assert
-             (char? (<- (gen #\a #\z))))
+             (every char? (<-* (gen #\a #\z))))
             (test-assert
              (char-set-contains? (char-set #\a #\b #\c) (<- (gen #\a #\c)))))
 
 
 (test-group "gen-constant"
-            (test "it constantly returns the given value"
-                  42
-                  (<- (gen-constant 42))))
+            (test-assert "it constantly returns the given value"
+                         (every (cut = <> 42) (<-* (gen-constant 42)))))
 
 (test-group "gen-bool"
   (test-assert
-   (in? (<- (gen-bool)) (list #t #f))))
+   (all-in? (<-* (gen-bool)) (list #t #f))))
 
 (test-group "gen-fixnum"
     (test-assert
-     (between? (<- (gen-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
+     (all-between? (<-* (gen-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
     (test-assert
-     (between? (<- (gen-fixnum 2 4)) 2 4))
+     (all-between? (<-* (gen-fixnum 2 4)) 2 4))
     (test-assert
-     (between? (<- (gen-fixnum (range 2 4))) 2 4))
+     (all-between? (<-* (gen-fixnum (range 2 4))) 2 4))
     (test-assert
-     (fixnum? (<- (fixnums))))
+     (every fixnum? (<-* (fixnums))))
     (test-error "lower bound <= upper bound"
      (gen-fixnum 4 2)))
 
 (test-group "gen-even-fixnum"
            (test-assert
-            (every even? (<- 100 (gen-even-fixnum))))
+            (every even? (<-* (gen-even-fixnum))))
            (test-assert
-            (between? (<- (gen-even-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
+            (all-between? (<-* (gen-even-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
            (test-assert
-            (between? (<- (gen-even-fixnum 2 4)) 2 4))
+            (all-between? (<-* (gen-even-fixnum 2 4)) 2 4))
            (test-assert
-            (between? (<- (gen-even-fixnum (range 2 4))) 2 4))
+            (all-between? (<-* (gen-even-fixnum (range 2 4))) 2 4))
            (test-assert
-            (even? (<- (even-fixnums))))
+            (every even? (<-* (even-fixnums))))
            (test-error "lower bound <= upper bound"
                        (gen-even-fixnum 4 2)))
 
 (test-group "gen-odd-fixnum"
            (test-assert
-            (every odd? (<- 100 (gen-odd-fixnum))))
+            (every odd? (<-* (gen-odd-fixnum))))
            (test-assert
-            (between? (<- (gen-odd-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
+            (all-between? (<-* (gen-odd-fixnum)) (gen-current-fixnum-min) (gen-current-fixnum-max)))
            (test-assert
-            (between? (<- (gen-odd-fixnum 2 4)) 2 4))
+            (all-between? (<-* (gen-odd-fixnum 2 4)) 2 4))
            (test-assert
-            (between? (<- (gen-odd-fixnum (range 2 4))) 2 4))
+            (all-between? (<-* (gen-odd-fixnum (range 2 4))) 2 4))
            (test-assert
-            (odd? (<- (odd-fixnums))))
+            (every odd? (<-* (odd-fixnums))))
            (test-error "lower bound <= upper bound"
                        (gen-odd-fixnum 4 2)))
 
@@ -93,7 +104,7 @@
     ((_  gen lower upper)
      (test-group (symbol->string (quote gen))
        (test-assert
-        (between? (<- (gen)) lower upper))))))
+        (all-between? (<-* (gen)) lower upper))))))
 
 (test-fixed-range gen-int8 -127 127)
 (test-fixed-range gen-uint8 0 255)
@@ -106,11 +117,11 @@
 
 (test-group "gen-real"
     (test-assert
-     (between? (<- (gen-real)) 0.0 1.0))
+     (all-between? (<-* (gen-real)) 0.0 1.0))
     (test-assert
-     (between? (<- (gen-real 1.0 2.0)) 1.0 2.0))
+     (all-between? (<-* (gen-real 1.0 2.0)) 1.0 2.0))
     (test-assert
-     (between? (<- (gen-real (range 1.0 2.0))) 1.0 2.0))
+     (all-between? (<-* (gen-real (range 1.0 2.0))) 1.0 2.0))
     (test-error "lower bound <= upper bound"
      (gen-real 2.0 1.0)))
 
@@ -124,19 +135,19 @@
 
 (test-group "gen-char"
     (test-assert
-     (char-set-contains? char-set:graphic (<- (gen-char))))
+     (every (cut char-set-contains? char-set:graphic <>) (<-* (gen-char))))
     (test-assert
-     (char-set-contains? char-set:digit (<- (gen-char char-set:digit))))
+     (every (cut char-set-contains? char-set:digit <>) (<-* (gen-char char-set:digit))))
     (test-assert
-     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char #\a #\c))))
+     (every (cut char-set-contains? (char-set #\a #\b #\c) <>) (<-* (gen-char #\a #\c))))
     (test-assert
-     (char-set-contains? (char-set #\a #\b #\c) (<- (gen-char (range #\a #\c)))))
+     (every (cut char-set-contains? (char-set #\a #\b #\c) <>) (<-* (gen-char (range #\a #\c)))))
     (test-error "lower bound <= upper bound"
      (gen-char #\z #\a)))
 
 (test-group "gen-sample"
-    (test-assert (between? (<- (gen-sample (iota 10))) 0 9))
-    (test-assert (in? (<- (gen-sample (list #\a #\b #\c))) (list #\a #\b #\c))))
+            (test-assert (all-between? (<-* (gen-sample (iota 10))) 0 9))
+            (test-assert (all-in? (<-* (gen-sample (list #\a #\b #\c))) (list #\a #\b #\c))))
 
 
 (test-group "gen-sample-of"
@@ -145,11 +156,11 @@
 
 (test-group "gen-pair-of"
     (test-assert "produces a pair"
-                 (pair? (<- (gen-pair-of (gen-fixnum) (gen-fixnum)))))
+                 (every pair? (<-* (gen-pair-of (gen-fixnum) (gen-fixnum)))))
     (test-assert "car is element of expected set"
-                 (fixnum? (car (<- (gen-pair-of (gen-fixnum) (gen-fixnum))))))
+                 (every (compose fixnum? car) (<-* (gen-pair-of (gen-fixnum) (gen-fixnum)))))
     (test-assert "cdr is element of expected set"
-                 (fixnum? (cdr (<- (gen-pair-of (gen-fixnum) (gen-fixnum)))))))
+                 (every (compose fixnum? cdr) (<-* (gen-pair-of (gen-fixnum) (gen-fixnum))))))
 
 (test-group "gen-values-of"
             (test-assert "produces values"
@@ -157,11 +168,10 @@
                     (and (fixnum? a) (fixnum? b) (char? c)))))
 
 (test-group "gen-tuple-of"
-    (test "produces tuple of given size"
-          3 (length (<- (gen-tuple-of (gen-fixnum) (gen-fixnum) (gen-fixnum)))))
-    (test "each element is element of expected set"
-          #t
-          (every fixnum? (<- (gen-tuple-of (gen-fixnum) (gen-fixnum))))))
+            (test-assert "produces tuple of given size"
+                         (every (lambda (e) (= (length e) 3)) (<-* (gen-tuple-of (gen-fixnum) (gen-fixnum) (gen-fixnum)))))
+            (test-assert "each element is element of expected set"
+                         (every fixnum? (flatten (<-* (gen-tuple-of (gen-fixnum) (gen-fixnum)))))))
 
 
 (define-syntax test-size-spec-support
@@ -183,34 +193,34 @@
 
 (test-group "gen-list-of"
     (test-assert "produces a list"
-                 (list? (<- (gen-list-of (gen-fixnum)))))
+                 (every list? (<-* (gen-list-of (gen-fixnum)))))
     (test-assert "each element is part of expected set"
-                 (every fixnum? (<- (gen-list-of (gen-fixnum)))))
+                 (every-in fixnum? (<-* (gen-list-of (gen-fixnum)))))
     (test-assert "accepts ranges"
-		 (between? (length (<- (gen-list-of (gen-fixnum) (range 1 10)))) 1 10))
+		 (all-between? (map length (<-* (gen-list-of (gen-fixnum) (range 1 10)))) 1 10))
 
     (test-size-spec-support length (gen-list-of (gen-fixnum))))
 
 
 (test-group "gen-alist-of"
    (test-assert "produces a list"
-                (list? (<- (gen-alist-of (gen-char) (gen-fixnum)))))
+                (every list? (<-* (gen-alist-of (gen-char) (gen-fixnum)))))
    (test-assert "every key is of expected set"
-                (every (compose char? car) (<- (gen-alist-of (gen-char) (gen-fixnum)))))
+                (every-in (compose char? car) (<-* (gen-alist-of (gen-char) (gen-fixnum)))))
    (test-assert "every value is of expected set"
-                (every (compose fixnum? cdr) (<- (gen-alist-of (gen-char) (gen-fixnum)))))
+                (every-in (compose fixnum? cdr) (<-* (gen-alist-of (gen-char) (gen-fixnum)))))
     (test-size-spec-support length (gen-alist-of (gen-fixnum) (gen-fixnum))))
 
 (test-group "gen-vector-of"
    (test-assert "produces a vector"
-                (vector? (<- (gen-vector-of (gen-fixnum)))))
+                (every vector? (<-* (gen-vector-of (gen-fixnum)))))
    (test-assert "every element is element of expected set"
-                (every fixnum?  (vector->list (<- (gen-vector-of (gen-fixnum))))))
+                (every-in fixnum?  (map vector->list (<-* (gen-vector-of (gen-fixnum))))))
    (test-size-spec-support vector-length (gen-vector-of (gen-fixnum))))
 
 (test-group "gen-string-of"
     (test-assert "produces a string"
-                 (string? (<- (gen-string-of (gen-char)))))
+                 (every string? (<-* (gen-string-of (gen-char)))))
     (test-assert "every element is within the given char-set"
                  (every (cut char-set-contains? char-set:graphic <>)
                         (string->list
@@ -219,26 +229,26 @@
 
 (test-group "gen-symbol"
             (test-assert "produces a symbol"
-                         (symbol? (<- (gen-symbol-of)))))
+                         (every symbol? (<-* (gen-symbol-of)))))
 
 (test-group "gen-keyword"
             (test-assert "produces keyword"
-                         (keyword? (<- (gen-keyword)))))
+                         (every keyword? (<-* (gen-keyword)))))
 
 (test-group "gen-procedure"
             (test-assert "produces proceduere"
-                         (procedure? (<- (gen-procedure))))
+                         (every procedure? (<-* (gen-procedure))))
             (test "procedure returns specified value"
                   'test
                   ((<- (gen-procedure 0 (gen-constant 'test))))))
 
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
-                 (hash-table? (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))
+                 (every hash-table? (<-* (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))
     (test-assert "every key is element of expected set"
-                 (every fixnum? (hash-table-keys (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
+                 (every-in fixnum? (map hash-table-keys (<-* (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
     (test-assert "every value is element of expected set"
-                 (every fixnum? (hash-table-values (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
+                 (every-in fixnum? (map hash-table-values (<-* (gen-hash-table-of (gen-fixnum) (gen-fixnum))))))
     (test-size-spec-support (o length hash-table-keys) (gen-hash-table-of (gen-fixnum) (gen-fixnum))))
 
 

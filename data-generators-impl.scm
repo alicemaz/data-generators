@@ -343,26 +343,23 @@
 
 (define gen-keyword gen-keyword-of)
 
-(define-syntax make-procedure-generator
+(define-syntax define-procedure-generator
   (ir-macro-transformer
    (lambda (exp inj cmp)
-     (let ((max-arity (cadr exp))
-           (arity (caddr exp))
-           (return (cadddr exp)))
-       `(begin
-          (unless (and (fixnum? ,arity) (<= ,arity ,max-arity))
-            (error "Arity must be a fixnum between 0 and " ,max-arity))
-          (case ,arity
-            ,@(map (lambda (i)
-                     `((,i) (generator (lambda ,(list-tabulate i (constantly '_)) (<- ,return)))))
-                   (iota (+  max-arity 1)))))))))
+     (let ((name (cadr exp))
+           (max-arity (caddr exp)))
+       `(define ,name
+          (case-lambda
+            (() (,name (<- (gen-fixnum 0 ,max-arity)) (gen-bool)))
+            ((arity return)
+             (unless (and (fixnum? arity) (<= arity ,max-arity))
+               (error "Arity must be a fixnum between 0 and " ,max-arity))
+             (case arity
+               ,@(map (lambda (i)
+                        `((,i) (generator (lambda ,(list-tabulate i (constantly '_)) (<- return)))))
+                      (iota (+  max-arity 1)))))))))))
 
-(define gen-procedure
-  (case-lambda
-    (()
-     (gen-procedure (<- (gen-fixnum 0 10)) (gen-bool)))
-    ((arity return)
-     (make-procedure-generator 10 arity return))))
+(define-procedure-generator gen-procedure 20)
 
 (define gen-vector-of
   (case-lambda
