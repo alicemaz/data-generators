@@ -24,6 +24,7 @@
   (let ((ub (+ size start)))
     (%clamp (+ start (* size (bsd:random-real))) start ub)))
 
+(: %clamp (float float float -> float))
 (define (%clamp val lower upper)
   (cond
    ((> val upper) upper)
@@ -87,8 +88,8 @@
     (gen rng)))
 
 ;;== primitive generators
-(define gen-current-fixnum-min (make-parameter -65536))
-(define gen-current-fixnum-max (make-parameter 65536))
+(define gen-current-fixnum-min (make-parameter -214748364))
+(define gen-current-fixnum-max (make-parameter 214748364))
 
 (define (gen-constant value)
   (generator value))
