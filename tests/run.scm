@@ -225,6 +225,13 @@
             (test-assert "produces keyword"
                          (keyword? (<- (gen-keyword)))))
 
+(test-group "gen-procedure"
+            (test-assert "produces proceduere"
+                         (procedure? (<- (gen-procedure))))
+            (test "procedure returns specified value"
+                  'test
+                  ((<- (gen-procedure 0 (gen-constant 'test))))))
+
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
                  (hash-table? (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))
