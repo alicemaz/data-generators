@@ -117,7 +117,10 @@
 (test-group "gen-series"
             (test "works for integers"
              (list 1 2 3 4)
-             (<- 4 (gen-series 1 4 add1))))
+             (<- 4 (gen-series 1 4 add1)))
+            (test "restarts"
+                  (list 1 2 1 2)
+                  (<- 4 (gen-series 1 2 add1))))
 
 (test-group "gen-char"
     (test-assert

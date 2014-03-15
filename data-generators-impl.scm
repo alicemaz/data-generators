@@ -13,12 +13,12 @@
 
 
 ;;== random primitives
+;; get a random integer uniformly
 (: %random-fixnum ((or fixnum float) (or fixnum float) -> fixnum))
 (define (%random-fixnum lo hi)
   (let ((range (- hi lo -1)))
     (inexact->exact (+ (bsd:random-integer range) lo))))
 
-;; currently this only return flonums
 (: %random-real (float float -> float))
 (define (%random-real #!optional (size 1.0) (start 0.0))
   (let ((ub (+ size start)))
@@ -32,14 +32,20 @@
    (else lower)))
 
 ;;== ranges are used to configure some generators
+(: range (forall (start (stop *)) (start stop -> (pair start stop))))
 (define (range start stop)
   (cond
    ((and (not start) stop) (cons (gen-current-fixnum-min) stop))
    ((and start (not stop)) (cons start (gen-current-fixnum-max)))
    (else (cons start stop))))
 
+(: range? (* -> boolean))
 (define range? pair?)
+
+(: range-start (forall (e (p (pair e e))) (p -> e)))
 (define range-start car)
+
+(: range-end (forall (e (p (pair e e))) (p -> e)))
 (define range-end cdr)
 
 ;;== generator implementation
@@ -49,8 +55,6 @@
      (lambda () ?body ...))))
 
 (define generator? procedure?)
-
-
 
 ;;== accessing elements from a generator
 (define <-
@@ -197,7 +201,6 @@
 
 (register-generator-for-type! flonum? gen-real)
 
-
 (define gen-series
   (case-lambda
     (() (gen-series (gen-current-fixnum-min) (gen-current-fixnum-max) add1))
@@ -208,8 +211,8 @@
      (let ((next lower))
        (generator
         (let ((actual next))
-          (set! next (if (> actual upper) lower (step actual)))
-          actual))))))
+          (set! next (if (>= actual upper) lower (step actual)))
+          (min actual upper)))))))
 
 (: gen-bool (-> (procedure () boolean)))
 (define (gen-bool)
