@@ -1,8 +1,9 @@
 
-
-* TODO reduce API for generators
+* DONE reduce API for generators
+  CLOSED: [2014-03-15 Sat 14:17]
   Remove the (some-gen size) API. So that generators either take have the form (gen start stop) or (gen range)
-* STARTED add benchmarks
+* DONE add benchmarks
+  CLOSED: [2014-03-15 Sat 14:17]
   - The generation of strings is currently slow. We need to test a different implementation here
     This is most likely due to the slow algorithm working with char-set iterators.
     A better approach would be to enumerate the chars in a vector and use that to draw the random chars from.
@@ -10,5 +11,16 @@
   - Check that no generator creates other generators needlessly. The creation is the expensive operation
     and can probably be done upfront
 
-* TODO update gen-for-each to pass the index of the sample to the proc
+* DONE update gen-for-each to pass the index of the sample to the proc
+  CLOSED: [2014-03-15 Sat 14:17]
 * TODO add generator for keywords symbols and procedures
+  - done for symbols
+
+* TODO add generator for sequence
+  (gen-series start stop step)
+  It generates values from start to stop with step steps
+  If stop is reached the generator starts over
+* TODO add generators for different distributions
+  - geometric
+  - poisson
+  - uniform
