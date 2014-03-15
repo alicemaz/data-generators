@@ -334,6 +334,15 @@
 
 (define gen-symbol gen-symbol-of)
 
+(define gen-keyword-of
+  (case-lambda
+    (()
+     (gen-keyword-of (gen-char char-set:letter+digit)))
+    ((char-gen)
+     (gen-transform string->keyword (gen-string-of char-gen)))))
+
+(define gen-keyword gen-keyword-of)
+
 (define gen-vector-of
   (case-lambda
     ((gen) (gen-vector-of gen (gen-current-default-size)))

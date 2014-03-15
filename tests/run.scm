@@ -221,6 +221,10 @@
             (test-assert "produces a symbol"
                          (symbol? (<- (gen-symbol-of)))))
 
+(test-group "gen-keyword"
+            (test-assert "produces keyword"
+                         (keyword? (<- (gen-keyword)))))
+
 (test-group "gen-hash-table-of"
     (test-assert "produces a hash-table"
                  (hash-table? (<- (gen-hash-table-of (gen-fixnum) (gen-fixnum)))))
