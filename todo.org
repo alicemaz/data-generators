@@ -1,4 +1,3 @@
-
 * DONE reduce API for generators
   CLOSED: [2014-03-15 Sat 14:17]
   Remove the (some-gen size) API. So that generators either take have the form (gen start stop) or (gen range)
@@ -13,10 +12,12 @@
 
 * DONE update gen-for-each to pass the index of the sample to the proc
   CLOSED: [2014-03-15 Sat 14:17]
-* TODO add generator for keywords symbols and procedures
+* DONE add generator for keywords symbols and procedures
+  CLOSED: [2014-03-16 Sun 15:53]
   - done for symbols
 
-* TODO add generator for sequence
+* DONE add generator for sequence
+  CLOSED: [2014-03-16 Sun 15:53]
   (gen-series start stop step)
   It generates values from start to stop with step steps
   If stop is reached the generator starts over
@@ -24,3 +25,4 @@
   - geometric
   - poisson
   - uniform
+* TODO add generator for rational numbers
