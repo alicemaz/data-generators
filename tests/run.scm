@@ -1,7 +1,7 @@
 
-(use test)
+(use test irregex)
 
-(use data-generators numbers)
+(use data-generators data-generators-net numbers)
 
 (define (in? x ls) (not (null? (member x ls))))
 (define (all-in? list-of-values ls)
@@ -14,6 +14,9 @@
 
 (define (all-between? ls x y)
   (every (lambda (v) (between? v x y)) ls))
+
+(define (all-match? rx vals)
+  (every (lambda (v) (irregex-match rx v)) vals))
 
 (define (<-* gen)
   (<- 50 gen))
@@ -307,6 +310,11 @@
                          (char? (<- #g[ #\a .. #\z ])))
             (test-error "unsupported generator"
                         #g[#t .. #f]))
+
+
+(test-group "generators/net"
+            (test-group "gen-ipv4"
+                        (all-match? 'ipv4-address (<-* (gen-ipv4-address)))))
 
 (test-end "data-generators")
 

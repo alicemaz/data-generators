@@ -15,3 +15,11 @@
  'data-generators-literals
  '("data-generators-literals.so" "data-generators-literals.import.so")
  `((version ,version)))
+
+(compile -d0 -O2 -J -s data-generators-net.scm)
+(compile -d0 -O2 -s data-generators-net.import.scm)
+
+(install-extension
+ 'data-generators-net
+  '("data-generators-net.so" "data-generators-net.import.so")
+   `((version ,version)))
