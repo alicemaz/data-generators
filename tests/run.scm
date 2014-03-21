@@ -125,6 +125,12 @@
     (test-error "lower bound <= upper bound"
      (gen-real 2.0 1.0)))
 
+(test-group "gen-rational"
+            (test-assert "creates a rational"
+                         (every rational? (<-* (gen-rational))))
+            (test-assert "it ensures non-zero denominator"
+                         (begin (<-* (gen-rational (fixnums) (gen-constant 0))) #t)))
+
 (test-group "gen-series"
             (test "works for integers"
              (list 1 2 3 4)

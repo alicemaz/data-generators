@@ -201,6 +201,22 @@
 
 (register-generator-for-type! flonum? gen-real)
 
+(define gen-rational
+  (case-lambda
+    (()
+     (gen-rational (fixnums) (fixnums)))
+    ((nom-gen denom-gen)
+     (let ((ensure-not-zero (lambda (val)
+                              (if (zero? val)
+                                  (<- (gen-fixnum 1 (gen-current-fixnum-max)))
+                                  val))))
+       (generator
+        (let ((nom (<- nom-gen))
+              (denom (ensure-not-zero (<- denom-gen))))
+          (/ nom denom)))))))
+
+(define rationals gen-rational)
+
 (define gen-series
   (case-lambda
     (() (gen-series (gen-current-fixnum-min) (gen-current-fixnum-max) add1))
