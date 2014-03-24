@@ -27,6 +27,4 @@
        (only data-structures o)
        srfi-14 srfi-69 numbers)
 
-  (include "data-generators-impl.scm")
-
-  )
+  (include "data-generators-impl.scm"))
