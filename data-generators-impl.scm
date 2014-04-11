@@ -31,6 +31,7 @@
    ((and (> val lower) (<= val upper)) val)
    (else lower)))
 
+
 ;;== ranges are used to configure some generators
 (: range (forall (start (stop *)) (start stop -> (pair start stop))))
 (define (range start stop)
@@ -197,7 +198,21 @@
      (assert-valid-bounds lower upper)
      (generator (%random-real (- upper lower) lower)))))
 
-(define flonums gen-real)
+;; TODO: find better name
+(define (gen-flonum-specialties)
+  (gen-sample (list +nan.0 +inf.0 -inf.0)))
+
+(define gen-flonum
+  (case-lambda
+    (()
+     (gen-sample-of (gen-flonum-specialties) (gen-flonum 0.0 1.0)))
+    ((range)
+     (safe-apply-range gen-flonum range))
+    ((lower upper)
+     (assert-valid-bounds lower upper)
+     (generator (%random-real (- upper lower) lower)))))
+
+(define flonums gen-flonum)
 
 (register-generator-for-type! flonum? gen-real)
 
