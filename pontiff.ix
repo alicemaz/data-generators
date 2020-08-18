@@ -13,7 +13,7 @@
          :cc clang
          :ld lld
          :artifacts [(pontiff:library :name data-generators :root data-generators)]
-         :tests []
+         :tests [(pontiff:executable :name unit :root test.unit)]
          :dependencies []
          :resolver alice
          :egg-dependencies [srfi-1 srfi-13 srfi-14 srfi-69]

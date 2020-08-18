@@ -1,7 +1,17 @@
+(module test.unit ()
 
-(use test irregex)
+(import scheme)
+(import chicken.base)
+(import chicken.string)
+(import chicken.format)
+(import chicken.keyword)
+(import chicken.irregex)
 
-(use data-generators data-generators-net numbers)
+(import test)
+(import data-generators)
+(import srfi-1)
+(import srfi-14)
+(import srfi-69)
 
 (define (in? x ls) (not (null? (member x ls))))
 (define (all-in? list-of-values ls)
@@ -244,7 +254,7 @@
             (test-assert "produces keyword"
                          (every keyword? (<-* (gen-keyword)))))
 
-(test-group "gen-procedure"
+#;(test-group "gen-procedure"
             (test-assert "produces proceduere"
                          (every procedure? (<-* (gen-procedure))))
             (test "procedure returns specified value"
@@ -277,41 +287,6 @@
             (test-assert "range" (between? (length  (with-size (range 2 4) (<- (gen-list-of (gen-fixnum))))) 2 4)))
 
 
-
-(use data-generators-literals)
-
-(test-group "range syntax"
-	    (test-group "inclusive"
-			(test "neg/inf to upper"
-			      (range (gen-current-fixnum-min)  5)
-			      #i[.. 5])
-			(test "lower to pos/inf"
-			      (range 3 (gen-current-fixnum-max))
-			      #i[3 ..])
-			(test "lower .. upper"
-			      (range 0 10)
-			      #i[0 .. 10]))
-            (test-group "exclusive"
-			(test "neg/inf to upper"
-			      (range (add1 (gen-current-fixnum-min)) 5)
-			      #i[... 5])
-			(test "lower to pos/inf"
-			      (range 3 (sub1 (gen-current-fixnum-max)))
-			      #i[3 ...])
-			(test "lower ... upper"
-			      (range 1 9)
-			      #i[0 ... 10])))
-
-(test-group "generator syntax"
-            (test-assert (fixnum? (<- #g[1 .. 2])))
-            (test-assert "#g[1.0 .. 4.0]"
-                         (flonum? (<- #g[1.0 .. 4.0])))
-            (test-assert "#g[#\\a .. #\\z]"
-                         (char? (<- #g[ #\a .. #\z ])))
-            (test-error "unsupported generator"
-                        #g[#t .. #f]))
-
-
 (test-group "generators/net"
             (test-group "gen-ipv4"
                         (all-match? 'ipv4-address (<-* (gen-ipv4-address)))))
@@ -319,3 +294,5 @@
 (test-end "data-generators")
 
 (test-exit)
+
+)
