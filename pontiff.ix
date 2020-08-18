@@ -1,0 +1,21 @@
+(pontiff :name data-generators
+         :version {4 0 0}
+         :pontiff-version {0 1 0}
+         :synopsis "automatically generate data for tests"
+         :authors ["David Krentzlin"]
+         :license "GPLv3"
+         :repository (pontiff:repository :name data-generators :vcs git :url "https://github.com/alicemaz/data-generators")
+         :category test
+         :tags []
+         :source-dir "src"
+         :test-dir "test"
+         :csc-flags ["-optimize-level" "2"]
+         :cc clang
+         :ld lld
+         :artifacts [(pontiff:library :name data-generators :root data-generators)]
+         :tests []
+         :dependencies []
+         :resolver alice
+         :egg-dependencies [srfi-1 srfi-13 srfi-14 srfi-69]
+         :egg-test-dependencies [test]
+         :egg-resolver chicken-install)

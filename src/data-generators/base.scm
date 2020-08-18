@@ -1,28 +1,36 @@
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or (at
-;; your option) any later version.
+(module data-generators.base (gen-current-fixnum-min gen-current-fixnum-max gen-current-default-size
+                              generator <- gen-for-each register-generator-for-type! gen gen-constant
+                              gen-int8 gen-uint8 gen-int16 gen-uint16 gen-int32 gen-uint32 gen-int64 gen-uint64
+                              fixnums even-fixnums odd-fixnums gen-flonum flonums gen-bool booleans gen-series
+                              gen-char chars gen-fixnum gen-even-fixnum gen-odd-fixnum gen-real gen-rational
+                              gen-sample gen-sample-of gen-pair-of gen-tuple-of gen-list-of gen-alist-of
+                              gen-vector-of gen-string-of gen-symbol-of gen-symbol gen-keyword-of gen-keyword
+                              #;gen-procedure gen-hash-table-of gen-record gen-values-of gen-transform with-size
+                              range size-spec->gen)
 
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+(import scheme)
+(import chicken.base)
+(import chicken.type)
+(import chicken.string)
+(import chicken.format)
+(import chicken.keyword)
+(import chicken.port)
+(import chicken.random)
 
-;; A full copy of the GPL license can be found at
-;; <http://www.gnu.org/licenses/>.
+(import srfi-1)
+(import srfi-14)
+(import srfi-69)
 
-
-;;== random primitives
 ;; get a random integer uniformly
-(: %random-fixnum ((or fixnum float) (or fixnum float) -> fixnum))
-(define (%random-fixnum lo hi)
+(: %random-integer (number number -> integer))
+(define (%random-integer lo hi)
   (let ((range (- hi lo -1)))
-    (inexact->exact (+ (bsd:random-integer range) lo))))
+    (inexact->exact (+ (pseudo-random-integer range) lo))))
 
 (: %random-real (float float -> float))
 (define (%random-real #!optional (size 1.0) (start 0.0))
   (let ((ub (+ size start)))
-    (%clamp (+ start (* size (bsd:random-real))) start ub)))
+    (%clamp (+ start (* size (pseudo-random-real))) start ub)))
 
 (: %clamp (float float float -> float))
 (define (%clamp val lower upper)
@@ -132,7 +140,7 @@
      (safe-apply-range gen-fixnum range))
     ((lower upper)
      (assert-valid-bounds lower upper)
-     (generator (%random-fixnum lower upper)))))
+     (generator (%random-integer lower upper)))))
 
 (define fixnums gen-fixnum)
 
@@ -149,7 +157,7 @@
      (let ((lower (if (odd? lower) lower (+ 1 lower)))
            (upper (if (odd? upper) upper (- upper 1))))
        (generator
-        (let ((val (%random-fixnum lower upper)))
+        (let ((val (%random-integer lower upper)))
           (if (odd? val) val (+ 1 val))))))))
 
 (define odd-fixnums gen-odd-fixnum)
@@ -165,7 +173,7 @@
      (let ((lower (if (even? lower) lower (+ 1 lower)))
            (upper (if (even? upper) upper (- upper 1))))
        (generator
-        (let ((val (%random-fixnum lower upper)))
+        (let ((val (%random-integer lower upper)))
           (if (even? val) val (+ 1 val))))))))
 
 (define even-fixnums gen-even-fixnum)
@@ -173,7 +181,7 @@
 (define-syntax define-fixed-range-generator
   (syntax-rules ()
     ((_ ?name ?lower ?upper)
-     (define (?name) (generator (%random-fixnum ?lower ?upper))))))
+     (define (?name) (generator (%random-integer ?lower ?upper))))))
 
 ;; since these generators
 ;; will most likely be used to feed some foreign code
@@ -247,12 +255,12 @@
 
 (: gen-bool (-> (procedure () boolean)))
 (define (gen-bool)
-  (generator (zero? (bsd:random-fixnum 2))))
+  (generator (zero? (pseudo-random-integer 2))))
 
 (: booleans (-> (procedure () boolean)))
 (define booleans gen-bool)
 
-(define char-set->vector (o list->vector char-set->list))
+(define char-set->vector (compose list->vector char-set->list))
 
 (define (boundaries->char-vector lower upper)
   (define (maybe-apply v p t) (if (p v) (t v) v))
@@ -374,7 +382,7 @@
 
 (define gen-keyword gen-keyword-of)
 
-(define-syntax define-procedure-generator
+#;(define-syntax define-procedure-generator
   (ir-macro-transformer
    (lambda (exp inj cmp)
      (let ((name (cadr exp))
@@ -388,9 +396,9 @@
              (case arity
                ,@(map (lambda (i)
                         `((,i) (generator (lambda ,(list-tabulate i (constantly '_)) (<- return)))))
-                      (iota (+  max-arity 1)))))))))))
+                      (iota (+ max-arity 1)))))))))))
 
-(define-procedure-generator gen-procedure 20)
+#;(define-procedure-generator gen-procedure 20)
 
 (define gen-vector-of
   (case-lambda
@@ -425,3 +433,5 @@
 (define (gen-transform transformer gen)
   (generator
    (transformer (<- gen))))
+
+)
